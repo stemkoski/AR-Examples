@@ -21,6 +21,31 @@
   Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
 -->
 
+<!-- ---------------- Custom Shader Code ------------------------ -->
+<script id="vertexShader" type="x-shader/x-vertex">
+uniform float time;
+varying vec2 textureUV;
+void main() 
+{ 
+    textureUV = uv;
+	vec3 newPosition = position + vec3( 0, 0, abs(sin(time)) );
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+}
+</script>
+
+<script id="fragmentShader" type="x-shader/x-vertex"> 
+uniform float time;
+uniform sampler2D baseTexture;
+varying vec2 textureUV;
+void main() 
+{
+	float amt = abs( sin(time) );
+	vec4 tintColor = texture2D( baseTexture, textureUV ) * vec4( amt, amt, 1, 1 );
+	gl_FragColor = tintColor;
+}  
+</script>
+<!-- ----------------------------------------------------------- -->
+
 <script>
 
 var scene, camera, renderer, clock, deltaTime, totalTime;
@@ -29,7 +54,7 @@ var arToolkitSource, arToolkitContext;
 
 var markerRoot1;
 
-var mesh1;
+var material1, mesh1;
 
 initialize();
 animate();
@@ -40,8 +65,6 @@ function initialize()
 
 	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
 	scene.add( ambientLight );
-				
-	
 				
 	camera = new THREE.Camera();
 	scene.add(camera);
@@ -116,34 +139,33 @@ function initialize()
 		patternUrl : "data/hiro.patt",
 	})
 
-	let geometry1 = new THREE.SphereGeometry(1, 32,32);
+	let geometry1 = new THREE.PlaneBufferGeometry(1,1, 4,4);
 	
 	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/earth-sphere.jpg', render );
-	// texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-	// texture.matrixAutoUpdate = false; // set this to false to update texture.matrix manually
-	let material1 = new THREE.MeshLambertMaterial( { map: texture, opacity: 0.5 } );
+	let texture = loader.load( 'images/color-grid.png', render );
+	
+	material1 = new THREE.ShaderMaterial({
+		uniforms: {
+			time: { value: 1.0 },
+			baseTexture: { value: texture }
+		},
+		vertexShader: document.getElementById( 'vertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+	});
 	
 	mesh1 = new THREE.Mesh( geometry1, material1 );
-	mesh1.position.y = 1;
+	mesh1.rotation.x = -Math.PI/2;
 	
 	markerRoot1.add( mesh1 );
-	
-	let pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
-	pointLight.position.set(0.5,3,2);
-	let lightGeometry = new THREE.SphereBufferGeometry( 0.05, 16,8 );
-	pointLight.add( new THREE.Mesh( lightGeometry, new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5 } ) ) );
-	markerRoot1.add( pointLight );
 }
-
 
 function update()
 {
-	if ( markerRoot1.visible )
-		mesh1.rotation.y += 0.01;
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
+		
+	material1.uniforms.time.value += deltaTime;
 }
 
 

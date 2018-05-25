@@ -4,6 +4,8 @@
 	<title>Hello, world!</title>
 	<!-- include three.js library -->
 	<script src='js/three.js'></script>
+	<script src='js/OBJLoader.js'></script>
+	<script src='js/MTLLoader.js'></script>
 	<!-- include jsartookit -->
 	<script src="jsartoolkit5/artoolkit.min.js"></script>
 	<script src="jsartoolkit5/artoolkit.api.js"></script>
@@ -38,10 +40,8 @@ function initialize()
 {
 	scene = new THREE.Scene();
 
-	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
+	let ambientLight = new THREE.AmbientLight( 0xcccccc, 1.0 );
 	scene.add( ambientLight );
-				
-	
 				
 	camera = new THREE.Camera();
 	scene.add(camera);
@@ -116,31 +116,39 @@ function initialize()
 		patternUrl : "data/hiro.patt",
 	})
 
-	let geometry1 = new THREE.SphereGeometry(1, 32,32);
 	
+	
+	let geometry1 = new THREE.PlaneBufferGeometry(1,1, 4,4);
 	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/earth-sphere.jpg', render );
-	// texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-	// texture.matrixAutoUpdate = false; // set this to false to update texture.matrix manually
-	let material1 = new THREE.MeshLambertMaterial( { map: texture, opacity: 0.5 } );
-	
+	// let texture = loader.load( 'images/earth.jpg', render );
+	let material1 = new THREE.MeshBasicMaterial( { color: 0x0000ff, opacity: 0.5 } );
 	mesh1 = new THREE.Mesh( geometry1, material1 );
-	mesh1.position.y = 1;
-	
+	mesh1.rotation.x = -Math.PI/2;
 	markerRoot1.add( mesh1 );
 	
-	let pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
-	pointLight.position.set(0.5,3,2);
-	let lightGeometry = new THREE.SphereBufferGeometry( 0.05, 16,8 );
-	pointLight.add( new THREE.Mesh( lightGeometry, new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5 } ) ) );
-	markerRoot1.add( pointLight );
+	function onProgress(xhr) { console.log( (xhr.loaded / xhr.total * 100) + '% loaded' ); }
+	function onError(xhr) { console.log( 'An error happened' ); }
+	
+	new THREE.MTLLoader()
+		.setPath( 'models/' )
+		.load( 'fish-2.mtl', function ( materials ) {
+			materials.preload();
+			new THREE.OBJLoader()
+				.setMaterials( materials )
+				.setPath( 'models/' )
+				.load( 'fish-2.obj', function ( group ) {
+					mesh0 = group.children[0];
+					mesh0.material.side = THREE.DoubleSide;
+					mesh0.position.y = 0.25;
+					mesh0.scale.set(0.25,0.25,0.25);
+					markerRoot1.add(mesh0);
+				}, onProgress, onError );
+		});
 }
 
 
 function update()
 {
-	if ( markerRoot1.visible )
-		mesh1.rotation.y += 0.01;
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );

@@ -38,10 +38,8 @@ function initialize()
 {
 	scene = new THREE.Scene();
 
-	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
+	let ambientLight = new THREE.AmbientLight( 0xcccccc, 1.0 );
 	scene.add( ambientLight );
-				
-	
 				
 	camera = new THREE.Camera();
 	scene.add(camera);
@@ -116,31 +114,38 @@ function initialize()
 		patternUrl : "data/hiro.patt",
 	})
 
-	let geometry1 = new THREE.SphereGeometry(1, 32,32);
-	
+	// the inside of the hole
+	let geometry1	= new THREE.CubeGeometry(2,2,2);
 	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/earth-sphere.jpg', render );
-	// texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-	// texture.matrixAutoUpdate = false; // set this to false to update texture.matrix manually
-	let material1 = new THREE.MeshLambertMaterial( { map: texture, opacity: 0.5 } );
+	let texture = loader.load( 'images/tiles.jpg', render );
+	let material1	= new THREE.MeshLambertMaterial({
+		transparent : true,
+		map: texture,
+		side: THREE.BackSide
+	}); 
 	
 	mesh1 = new THREE.Mesh( geometry1, material1 );
-	mesh1.position.y = 1;
+	mesh1.position.y = -1;
 	
 	markerRoot1.add( mesh1 );
 	
-	let pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
-	pointLight.position.set(0.5,3,2);
-	let lightGeometry = new THREE.SphereBufferGeometry( 0.05, 16,8 );
-	pointLight.add( new THREE.Mesh( lightGeometry, new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5 } ) ) );
-	markerRoot1.add( pointLight );
+	// the invisibility cloak (box with a hole)
+	let geometry0 = new THREE.BoxGeometry(2,2,2);
+	geometry0.faces.splice(4, 2); // make hole by removing top two triangles
+	
+	let material0 = new THREE.MeshBasicMaterial({
+		colorWrite: false
+	});
+	
+	let mesh0 = new THREE.Mesh( geometry0, material0 );
+	mesh0.scale.set(1,1,1).multiplyScalar(1.01);
+	mesh0.position.y = -1;
+	markerRoot1.add(mesh0);	
 }
 
 
 function update()
 {
-	if ( markerRoot1.visible )
-		mesh1.rotation.y += 0.01;
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
