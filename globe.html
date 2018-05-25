@@ -27,7 +27,7 @@ var scene, camera, renderer, clock, deltaTime, totalTime;
 
 var arToolkitSource, arToolkitContext;
 
-var markerRoot1, markerRoot2;
+var markerRoot1;
 
 var mesh1;
 
@@ -40,6 +40,8 @@ function initialize()
 
 	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
 	scene.add( ambientLight );
+				
+	
 				
 	camera = new THREE.Camera();
 	scene.add(camera);
@@ -114,22 +116,31 @@ function initialize()
 		patternUrl : "data/hiro.patt",
 	})
 
-	let geometry1	= new THREE.CubeGeometry(1,1,1);
-	let material1	= new THREE.MeshNormalMaterial({
-		transparent : true,
-		opacity: 0.5,
-		side: THREE.DoubleSide
-	}); 
+	let geometry1 = new THREE.SphereGeometry(1, 32,32);
+	
+	let loader = new THREE.TextureLoader();
+	let texture = loader.load( 'images/earth-sphere.jpg', render );
+	// texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+	// texture.matrixAutoUpdate = false; // set this to false to update texture.matrix manually
+	let material1 = new THREE.MeshLambertMaterial( { map: texture, opacity: 0.5 } );
 	
 	mesh1 = new THREE.Mesh( geometry1, material1 );
-	mesh1.position.y = 0.5;
+	mesh1.position.y = 1;
 	
 	markerRoot1.add( mesh1 );
+	
+	let pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
+	pointLight.position.set(0.5,3,2);
+	let lightGeometry = new THREE.SphereBufferGeometry( 0.05, 16,8 );
+	pointLight.add( new THREE.Mesh( lightGeometry, new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: 0.5 } ) ) );
+	markerRoot1.add( pointLight );
 }
 
 
 function update()
 {
+	if ( markerRoot1.visible )
+		mesh1.rotation.y += 0.01;
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
