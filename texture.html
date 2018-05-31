@@ -107,18 +107,14 @@ function initialize()
 
 	// build markerControls
 	markerRoot1 = new THREE.Group();
-	markerRoot1.name = 'marker1';
 	scene.add(markerRoot1);
 	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, markerRoot1, {
-		type : 'pattern',
-		patternUrl : "data/hiro.patt",
+		type: 'pattern', patternUrl: "data/hiro.patt",
 	})
 
 	let geometry1 = new THREE.PlaneBufferGeometry(1,1, 4,4);
 	let loader = new THREE.TextureLoader();
 	let texture = loader.load( 'images/earth.jpg', render );
-	// texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-	// texture.matrixAutoUpdate = false; // set this to false to update texture.matrix manually
 	let material1 = new THREE.MeshBasicMaterial( { map: texture } );
 	
 	mesh1 = new THREE.Mesh( geometry1, material1 );

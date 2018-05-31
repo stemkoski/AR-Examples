@@ -7,7 +7,7 @@
 
 <div class="bigTitle">AR.js Examples</div>
 <hr>
-The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in 
+The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in the Javascript-based Augmented Reality library, 
 <a class="toc" href="https://github.com/jeromeetienne/AR.js">AR.js</a>. 
 <br/><br/>
 Viewing these examples will require a device with a camera and one or both of the <a class="toc" href="markers/hiro.png">Hiro</a> and <a class="toc" href="markers/kanji.png">Kanji</a> marker patterns (either printed or displayed on a second device).
@@ -19,8 +19,24 @@ Source code hosted at <a class="toc" href="https://github.com/stemkoski/AR-Examp
 <div class="fancy">
 <a href="hello-cube.html">
 <img src="images/demo/hello-cube.png" class="superImage" />
-<br/>Hello Cube</a>
+<br/>Basic Cube</a>
 <p class ="superText">A basic scene that superimposes a cube on a Hiro marker.
+</p>
+</div>
+
+<div class="fancy">
+<a href="custom-patterns.html">
+<img src="images/demo/custom-patterns.png" class="superImage" />
+<br/>Many Cubes</a>
+<p class ="superText">A scene that superimposes different colored cubes on a Hiro, Kanji, and letter markers.
+</p>
+</div>
+
+<div class="fancy">
+<a href="smoothed-controls.html">
+<img src="images/demo/hello-cube.png" class="superImage" />
+<br/>Smoothed Controls</a>
+<p class ="superText">The basic scene, recreated using "smoothed controls", which interpolates the marker location from frame to frame at an adjustable rate.
 </p>
 </div>
 
@@ -67,16 +83,56 @@ Source code hosted at <a class="toc" href="https://github.com/stemkoski/AR-Examp
 <div class="fancy">
 <a href="hole-box.html">
 <img src="images/demo/hole-box.png" class="superImage" />
-<br/>Hole in the Floor</a>
+<br/>Hole in the Floor (Box)</a>
 <p class ="superText">A "hole in the floor" effect. Uses a box geometry to mask the hidden parts of the hole.
 </p>
 </div>
+
+<div class="fancy">
+<a href="hole-plane.html">
+<img src="images/demo/hole-box.png" class="superImage" />
+<br/>Hole in the Floor (Plane)</a>
+<p class ="superText">Another "hole in the floor" effect, using a plane geometry to mask the hidden parts of the hole.
+</p>
+</div>
+
+<div class="fancy">
+<a href="hole-ring.html">
+<img src="images/demo/hole-ring.png" class="superImage" />
+<br/>Hole in the Floor (Ring)</a>
+<p class ="superText">A cylindrical "hole in the floor" effect, using a ring geometry to mask the hidden parts of the hole.
+</p>
+</div>
+
+<div class="fancy">
+<a href="basic-scene.html" target="_blank">
+<img src="images/demo/basic-scene.png" class="superImage" />
+<br/>Basic Scene</a>
+<p class ="superText"> A basic scene created with only Three.js (no AR), useful for prototyping ideas before adding in AR components. </p>
+</div>
+
+<div class="fancy">
+<a href="water-effect.html" target="_blank">
+<img src="images/demo/water-effect.png" class="superImage" />
+<br/>Water Effect (no AR)</a>
+<p class ="superText"> An animated effect (using shaders) that looks like water flowing 
+out from a central point and being absorbed into the floor. (No AR.)</p>
+</div>
+
+<div class="fancy">
+<a href="water-effect-AR.html" target="_blank">
+<img src="images/demo/water-effect-AR.png" class="superImage" />
+<br/>Water Effect (AR version)</a>
+<p class ="superText"> An animated effect (using shaders) that looks like water flowing 
+out from a cylindrical hole (displayed above a Hiro marker), and being absorbed into the floor. </p>
+</div>
+
 
 
 <!--
 <div class="fancy">
 <a href="zzzz.html" target="_blank">
-<img src="html-images/zzzz.png" class="superImage" />
+<img src="images/demo/zzzz.png" class="superImage" />
 <br/>zzzz</a>
 <p class ="superText"> ... </p>
 </div>

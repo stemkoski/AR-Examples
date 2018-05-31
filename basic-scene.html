@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<title>Hello, world!</title>
+	<!-- include three.js library -->
+	<script src='js/three.js'></script>
+</head>
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
+
+<!-- 
+  Example created by Lee Stemkoski: https://github.com/stemkoski
+-->
+
+<!-- ---------------- Custom Shader Code ------------------------ -->
+<script id="vertexShader" type="x-shader/x-vertex">
+uniform float time;
+varying vec2 textureUV;
+void main() 
+{ 
+    textureUV = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}
+</script>
+
+<script id="fragmentShader" type="x-shader/x-vertex"> 
+uniform float time;
+uniform sampler2D baseTexture;
+varying vec2 textureUV;
+void main() 
+{
+	gl_FragColor = texture2D( baseTexture, textureUV );
+}  
+</script>
+<!-- ----------------------------------------------------------- -->
+
+<script>
+
+var scene, camera, renderer, clock, deltaTime, totalTime;
+
+var mesh, shaderMaterial;
+
+initialize();
+animate();
+
+function initialize()
+{
+	scene = new THREE.Scene();
+				
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 );
+	camera.position.set(0, 2, 4);
+	camera.lookAt( scene.position );	
+	scene.add( camera );
+
+	let ambientLight = new THREE.AmbientLight( 0xcccccc, 1.00 );
+	scene.add( ambientLight );
+	
+	// let pointLight = new THREE.PointLight();
+	// camera.add( pointLight );
+	
+	renderer = new THREE.WebGLRenderer({
+		antialias : true,
+		alpha: false
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top  = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
+	window.addEventListener( 'resize', onWindowResize, false );
+
+	clock = new THREE.Clock();
+	deltaTime = 0;
+	totalTime = 0;
+	
+	let geometry = new THREE.BoxGeometry(1,1,1);
+	
+	let loader = new THREE.TextureLoader();
+	let texture = loader.load( 'images/color-grid.png', render );
+	
+	/*
+	// Basic, unlit material
+	let basicMaterial = new THREE.MeshBasicMaterial({ 
+		color: 0x0000ff,
+		wireframe: false,
+	});
+	*/
+	
+	// Basic, lit material
+	let material = new THREE.MeshLambertMaterial({ 
+		map: texture
+	});
+	
+	/*
+	// Shader-based material
+	let shaderMaterial = new THREE.ShaderMaterial({
+		uniforms: {
+			time: { value: 1.0 },
+			baseTexture: { value: texture }
+		},
+		vertexShader: document.getElementById( 'vertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+	});
+	*/
+	
+	mesh = new THREE.Mesh( geometry, material );
+	
+	scene.add( mesh );
+}
+
+function update()
+{
+	mesh.rotation.y += 0.01;
+	// shaderMaterial.uniforms.time.value += deltaTime;
+}
+
+function render()
+{
+	renderer.render( scene, camera );
+}
+
+function animate()
+{
+	requestAnimationFrame(animate);
+	deltaTime = clock.getDelta();
+	totalTime += deltaTime;
+	update();
+	render();
+}
+
+function onWindowResize() 
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+</script>
+
+</body>
+</html>
