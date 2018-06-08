@@ -1,16 +1,16 @@
 <html>
 <head>
-<title>AR.js - examples</title>
+<title>Three.js and AR.js - examples</title>
 <link rel=stylesheet href="css/index.css"/>
 </head>
 <body>
 
-<div class="bigTitle">AR.js Examples</div>
+<div class="bigTitle">Three.js and AR.js Examples</div>
 <hr>
-The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in the Javascript-based Augmented Reality library, 
-<a class="toc" href="https://github.com/jeromeetienne/AR.js">AR.js</a>. 
+The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in the Javascript-based Augmented Reality (AR) library, 
+<a class="toc" href="https://github.com/jeromeetienne/AR.js">AR.js</a>. Advanced <a class="toc" href="https://threejs.org/">three.js</a> examples are also included.
 <br/><br/>
-Viewing these examples will require a device with a camera and one or both of the <a class="toc" href="markers/hiro.png">Hiro</a> and <a class="toc" href="markers/kanji.png">Kanji</a> marker patterns (either printed or displayed on a second device).
+Viewing the AR examples will require a device with a camera and one or both of the <a class="toc" href="markers/hiro.png">Hiro</a> and <a class="toc" href="markers/kanji.png">Kanji</a> marker patterns (either printed or displayed on a second device).
 <br/><br/>
 Source code hosted at <a class="toc" href="https://github.com/stemkoski/AR-Examples">GitHub</a>.
 
@@ -145,7 +145,32 @@ out from a cylindrical hole (displayed above a Hiro marker), and being absorbed 
 <a href="portal-half-keyboard-test.html" target="_blank">
 <img src="images/demo/portal-half-keyboard-test.png" class="superImage" />
 <br/>Portal Test</a>
-<p class ="superText"> Creating a "portal to another world" effect. Camera moves using same controls as Object Movement example. Only visible from one side. </p>
+<p class ="superText"> Creating a "portal to another world" effect. Camera moves using same controls as Object Movement example. Only visible from one side. 
+<br/>Not very robust -- see the following portal examples instead.</p>
+</div>
+
+<div class="fancy">
+<a href="stencil-test.html" target="_blank">
+<img src="images/demo/stencil-test.png" class="superImage" />
+<br/>Stencil Buffer Test</a>
+<p class ="superText"> A simple example that uses layers and the stencil buffer to render part of the scene
+onto a plane in the scene. Camera moves using same controls as Object Movement example. Useful for understanding portal view example. </p>
+</div>
+
+<div class="fancy">
+<a href="clipping-planes.html" target="_blank">
+<img src="images/demo/clipping-planes.png" class="superImage" />
+<br/>Clipping Planes</a>
+<p class ="superText"> A simple example that sets up a clipping plane (aligned with a plane mesh) to limit the volume of the scene that is rendered. Useful for understanding portal view example. </p>
+</div>
+
+<div class="fancy">
+<a href="portal-view.html" target="_blank">
+<img src="images/demo/portal-view.png" class="superImage" />
+<br/>Portal View</a>
+<p class ="superText"> A "portal to another world" effect. Portal visible through both sides. 
+<br/>Camera moves using same controls as Object Movement example; also, press 1, 2, or 3 to see the view from different cameras. 
+<br/>Uses stencil buffer and clipping planes for accurate rendering. </p>
 </div>
 
 <!--

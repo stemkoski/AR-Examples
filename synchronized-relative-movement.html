@@ -17,7 +17,7 @@
 
 var scene, camera, renderer, clock, deltaTime, totalTime, keyboard;
 
-var mover;
+var mover, secondMover, plane, secondPlane;
 
 initialize();
 animate();
@@ -27,15 +27,9 @@ function initialize()
 	scene = new THREE.Scene();
 				
 	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 );
-	
-	mover = new THREE.Group();
-	mover.add( camera );
-	mover.position.set(0, 1, 3);
-	scene.add( mover );
-		
-	// camera.position.set(0, 2, 4);
-	// camera.lookAt( scene.position );	
-	// scene.add( camera );
+	camera.position.set(0, 6, 8);
+	camera.lookAt( scene.position );	
+	scene.add( camera );
 
 	let ambientLight = new THREE.AmbientLight( 0xcccccc, 1.00 );
 	scene.add( ambientLight );
@@ -64,49 +58,68 @@ function initialize()
 	let loader = new THREE.TextureLoader();
 	
 	// floor
-	let floorGeometry = new THREE.PlaneGeometry(10,10);
+	let floorGeometry = new THREE.PlaneGeometry(20,20);
 	let floorMaterial = new THREE.MeshBasicMaterial({ 
 		map: loader.load( 'images/color-grid.png' )
 	});
 	let floorMesh = new THREE.Mesh( floorGeometry, floorMaterial );
 	floorMesh.rotation.x = -Math.PI/2;
 	scene.add( floorMesh );
-
-	let halfSphereGroup = new THREE.Group();
-	halfSphereGroup.position.y = 1;
-	scene.add(halfSphereGroup);
 	
-	let sphereRadius = 1;
-	let holeRadius = 0.5;
-	let borderThickness = 0.05;
+	let cubeGeometry = new THREE.BoxGeometry(1,1,1);
+	let materialArray = [
+		new THREE.MeshBasicMaterial( { map: loader.load("images/xpos.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/xneg.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/ypos.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/yneg.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/zpos.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/zneg.png") } ),
+	];
+	let cubeMesh = new THREE.Mesh( cubeGeometry, materialArray );
 	
-	let halfSphereGeometry = new THREE.SphereGeometry(sphereRadius, 32, 32, Math.PI, Math.PI); // startAngle, sweepAngle
+	mover = new THREE.Group();
+	mover.add( cubeMesh );
+	mover.position.set(-3, 0.5, 2);
+	scene.add( mover );
 	
-	let cloakTexture = loader.load("images/color-grid.png");
-	cloakMaterial = new THREE.MeshBasicMaterial({ map: cloakTexture, side: THREE.FrontSide, colorWrite: false }); // change colorWrite: true to see the cloak
-	let sceneTexture = loader.load("images/scene-sphere-outside.jpg");
-	sceneTexture.offset.x = 0.5;
-	sceneTexture.repeat.set(0.5, 1);
+	secondMover = new THREE.Group();
+	secondMover.add( new THREE.Mesh(cubeGeometry, materialArray) );
+	scene.add(secondMover);
 	
-	let innerSphere = new THREE.Mesh( halfSphereGeometry, new THREE.MeshBasicMaterial({ map: sceneTexture, side: THREE.BackSide }) );
-	let outerSphere = new THREE.Mesh( halfSphereGeometry, cloakMaterial );
-	let holeMesh    = new THREE.Mesh( new THREE.RingGeometry(holeRadius, sphereRadius * 1.01, 32), cloakMaterial );
-	let borderMesh  = new THREE.Mesh( new THREE.RingGeometry(holeRadius, holeRadius + borderThickness , 32), new THREE.MeshBasicMaterial({color: 0xffffff, side: THREE.DoubleSide}) );
-	borderMesh.position.z = 0.001; // avoid depth-fighting artifacts
+	plane = new THREE.Mesh(
+		new THREE.PlaneGeometry(1,1),
+		new THREE.MeshBasicMaterial({map:loader.load("images/sphere-colored.png")})
+	);
+	plane.position.set(-4, 0.5, 1);
+	plane.rotation.y = Math.PI/4
+	scene.add(plane);
 	
-	halfSphereGroup.add( innerSphere );
-	halfSphereGroup.add( outerSphere );
-	halfSphereGroup.add( holeMesh );	
-	halfSphereGroup.add( borderMesh );
+	secondPlane = new THREE.Mesh(
+		new THREE.PlaneGeometry(1,1),
+		new THREE.MeshBasicMaterial({map:loader.load("images/sphere-colored.png")})
+	);
+	secondPlane.position.set(4, 0.5, 3);
+	secondPlane.rotation.y = -Math.PI/4;
+	scene.add(secondPlane);
 }
 
 function update()
 {
+	// the following does not work; need to take into account local rotation before add/sub
+	// let relativePosition = mover.position.clone().sub( plane.position );
+	// secondMover.position.copy( relativePosition.add(secondPlane.position) );
+	
+	let relativePosition = plane.worldToLocal( mover.position.clone() );
+	secondMover.position.copy( secondPlane.localToWorld( relativePosition ) );
+	
+	let relativeRotation = mover.quaternion.clone().multiply( plane.quaternion.clone().inverse() );	
+	secondMover.quaternion.copy( relativeRotation.multiply(secondPlane.quaternion) ); 
+	
 	keyboard.update();
 	
-	let translateSpeed = 1; // units per second
+	let translateSpeed = 0.5; // units per second
 	let distance = translateSpeed * deltaTime;
-	let rotateSpeed = Math.PI/6; // radians per second
+	let rotateSpeed = Math.PI/3; // radians per second
 	let angle = rotateSpeed * deltaTime;
 	
 	if (keyboard.isKeyPressed("W"))

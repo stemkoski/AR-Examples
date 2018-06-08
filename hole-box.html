@@ -117,7 +117,7 @@ function initialize()
 	// the inside of the hole
 	let geometry1	= new THREE.CubeGeometry(2,2,2);
 	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/tiles.jpg', render );
+	let texture = loader.load( 'images/tiles.jpg' );
 	let material1	= new THREE.MeshLambertMaterial({
 		transparent : true,
 		map: texture,
