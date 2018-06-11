@@ -30,7 +30,7 @@ var arToolkitSource, arToolkitContext, smoothedControls;
 
 var markerRoot1, markerRoot2;
 
-var portal, portalRing;
+var portal, portalMaterial;
 
 initialize();
 animate();
@@ -133,37 +133,43 @@ function initialize()
 	
 	let loader = new THREE.TextureLoader();
 	
-	// material for portals and blockers
+	// material for portal (for debugging)
+	
 	let defaultMaterial = new THREE.MeshBasicMaterial({
 		map: loader.load("images/sphere-colored.png"), 
 		color: 0x444444,
 		side: THREE.DoubleSide,
-		transparent: true
+		transparent: true,
+		opacity: 0.6
 	});
 	
+	let portalWidth = 2;
+	let portalHeight = 4;
+	let portalBorder = 0.1;
+	
 	portal = new THREE.Mesh(
-		new THREE.CircleGeometry(1, 64),
-		defaultMaterial.clone()
+		new THREE.PlaneGeometry(portalWidth, portalHeight),
+		defaultMaterial
 	);
-	portal.material.opacity = 0.5;
-	portal.position.y = 2;
-	//portal.rotation.y = Math.PI/4;
+	portal.position.y = portalHeight/2 + portalBorder;
 	portal.layers.set(1);
 	smoothedRoot.add(portal);
 	
 	camera.layers.enable(1);
 	
-	portalRing = new THREE.Mesh(
-		new THREE.RingGeometry(1, 1.1, 64),
-		new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide, transparent:true })
-	);
-	portalRing.position.copy( portal.position );
-	portalRing.rotation.copy( portal.rotation );
-	portalRing.layers.set(0);
-	smoothedRoot.add(portalRing);
+	portalMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide, transparent:true, opacity: 0.75 });
 	
+	
+	let portalBorderMesh = new THREE.Mesh(
+		new THREE.PlaneGeometry(portalWidth + 2*portalBorder, portalHeight + 2*portalBorder),
+		portalMaterial
+	);
+	portalBorderMesh.position.y = portal.position.y;
+	portalBorderMesh.layers.set(0);
+	smoothedRoot.add(portalBorderMesh);
 	
 	// the world beyond the portal
+	
 	// textures from http://www.humus.name/
 	let skyMaterialArray = [
 		new THREE.MeshBasicMaterial( { map: loader.load("images/mountain/posx.jpg"), side: THREE.BackSide } ),
@@ -185,7 +191,7 @@ function initialize()
 function update()
 {
 	// portal ring color cycle
-	portalRing.material.color.setHSL( totalTime/10 % 1, 1, 0.75 );
+	portalMaterial.color.setHSL( totalTime/10 % 1, 1, 0.75 );
 	
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
@@ -198,6 +204,7 @@ function update()
 
 function render()
 {
+	//renderer.render( scene, camera );
 
 	let gl = renderer.context;
 	
@@ -240,11 +247,12 @@ function render()
 	// FINAL PASS
 	// goal: render the rest of the scene (layer 0)
 	
-	gl.disable(gl.STENCIL_TEST);
+	// using stencil buffer simplifies drawing border around portal
+	gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
 	gl.colorMask(true,true,true,true);
 	gl.depthMask(true);
 	
-	camera.layers.set(0); // layer 0 contains portal ring
+	camera.layers.set(0); // layer 0 contains portal border mesh
 	renderer.render( scene, camera );
 	
 	// set things back to normal
