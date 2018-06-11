@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<title>Hello, AR Cubes!</title>
+	<title>Hello, AR Cube!</title>
 	<!-- include three.js library -->
 	<script src='js/three.js'></script>
 	<!-- include jsartookit -->
@@ -108,6 +108,9 @@ function initialize()
 	let loader = new THREE.TextureLoader();
 	let texture = loader.load( 'images/border.png' );
 		
+	markerRootArray = [];
+	meshArray = [];
+		
 	let patternArray = ["letterA", "letterB", "letterC", "letterD", "letterF", "kanji", "hiro"];
 	let colorArray   = [0xff0000, 0xff8800, 0xffff00, 0x00cc00, 0x0000ff, 0xcc00ff, 0xcccccc];
 	for (let i = 0; i < 7; i++)
@@ -120,10 +123,14 @@ function initialize()
 	
 		let mesh = new THREE.Mesh( 
 			new THREE.CubeGeometry(1.25,1.25,1.25), 
-			new THREE.MeshBasicMaterial({color:colorArray[i], map:texture, transparent:true, opacity:0.5}) 
+			new THREE.MeshBasicMaterial({color:colorArray[i], map:texture, transparent:true, opacity:0.99}) 
 		);
-		mesh.position.y = 1.25/2;
+		mesh.position.y = -1.25/2;
+		// mesh.visible = false;
 		markerRoot.add( mesh );
+		
+		markerRootArray.push(markerRoot);
+		meshArray.push(mesh);
 	}
 }
 
@@ -133,6 +140,23 @@ function update()
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
+	
+	
+	for (let i = 0; i < 6; i++)
+	{
+		//if ( markerRootArray[i].visible )
+		//	console.log("Visible: " + i );
+		meshArray[i].visible = false;
+	}
+	
+	
+	if (markerRootArray[0].visible) meshArray[0].visible = true;
+	else if (markerRootArray[1].visible) meshArray[1].visible = true;
+	else if (markerRootArray[2].visible) meshArray[2].visible = true;
+	else if (markerRootArray[3].visible) meshArray[3].visible = true;
+	else if (markerRootArray[4].visible) meshArray[4].visible = true;
+	else if (markerRootArray[5].visible) meshArray[5].visible = true;
+		
 }
 
 

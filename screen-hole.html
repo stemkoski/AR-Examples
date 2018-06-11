@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<title>Hello, AR Cubes!</title>
+	<title>Hello, world!</title>
 	<!-- include three.js library -->
 	<script src='js/three.js'></script>
 	<!-- include jsartookit -->
@@ -27,7 +27,8 @@ var scene, camera, renderer, clock, deltaTime, totalTime;
 
 var arToolkitSource, arToolkitContext;
 
-var markerRoot1, markerRoot2;
+var kanjiMarker, aMarker, bMarker, cMarker, dMarker;
+var kanjiGroup, aGroup, bGroup, cGroup, dGroup, sceneGroup;
 
 var mesh1;
 
@@ -38,7 +39,7 @@ function initialize()
 {
 	scene = new THREE.Scene();
 
-	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
+	let ambientLight = new THREE.AmbientLight( 0xcccccc, 1.0 );
 	scene.add( ambientLight );
 				
 	camera = new THREE.Camera();
@@ -105,31 +106,108 @@ function initialize()
 	// setup markerRoots
 	////////////////////////////////////////////////////////////
 
-	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/border.png' );
-		
-	let patternArray = ["letterA", "letterB", "letterC", "letterD", "letterF", "kanji", "hiro"];
-	let colorArray   = [0xff0000, 0xff8800, 0xffff00, 0x00cc00, 0x0000ff, 0xcc00ff, 0xcccccc];
-	for (let i = 0; i < 7; i++)
-	{
-		let markerRoot = new THREE.Group();
-		scene.add(markerRoot);
-		let markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
-			type : 'pattern', patternUrl : "data/" + patternArray[i] + ".patt",
-		});
+	kanjiMarker = new THREE.Group();
+	scene.add(kanjiMarker);
+	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, kanjiMarker, {
+		type: 'pattern', patternUrl: "data/kanji.patt",
+	});
+	kanjiGroup = new THREE.Group();
+	kanjiMarker.add(kanjiGroup);
 	
-		let mesh = new THREE.Mesh( 
-			new THREE.CubeGeometry(1.25,1.25,1.25), 
-			new THREE.MeshBasicMaterial({color:colorArray[i], map:texture, transparent:true, opacity:0.5}) 
-		);
-		mesh.position.y = 1.25/2;
-		markerRoot.add( mesh );
-	}
+	aMarker = new THREE.Group();
+	scene.add(aMarker);
+	let markerControlsA = new THREEx.ArMarkerControls(arToolkitContext, aMarker, {
+		type: 'pattern', patternUrl: "data/letterA.patt",
+	});
+	aGroup = new THREE.Group();
+	aMarker.add(aGroup);
+	
+	bMarker = new THREE.Group();
+	scene.add(bMarker);
+	let markerControlsB = new THREEx.ArMarkerControls(arToolkitContext, bMarker, {
+		type: 'pattern', patternUrl: "data/letterB.patt",
+	});
+	bGroup = new THREE.Group();
+	bMarker.add(bGroup);
+	
+	cMarker = new THREE.Group();
+	scene.add(cMarker);
+	let markerControlsC = new THREEx.ArMarkerControls(arToolkitContext, cMarker, {
+		type: 'pattern', patternUrl: "data/letterC.patt",
+	});
+	cGroup = new THREE.Group();
+	cMarker.add(cGroup);
+
+	dMarker = new THREE.Group();
+	scene.add(dMarker);
+	let markerControlsD = new THREEx.ArMarkerControls(arToolkitContext, dMarker, {
+		type: 'pattern', patternUrl: "data/letterD.patt",
+	});
+	dGroup = new THREE.Group();
+	dMarker.add(dGroup);
+
+	// set relative positions of letter markers to Kanji marker
+	aGroup.position.set( 2.50, 0, 1.25);
+	bGroup.position.set(-2.50, 0, 1.25);
+	cGroup.position.set( 2.50, 0, -1.25);
+	dGroup.position.set(-2.50, 0, -1.25);
+	
+	////////////////////////////////////////////////////////////
+	// setup scene
+	////////////////////////////////////////////////////////////
+	
+	sceneGroup = new THREE.Group();
+	
+	// the inside of the hole
+	let geometry1	= new THREE.CubeGeometry(5*1.25, 2, 3*1.25);
+	let loader = new THREE.TextureLoader();
+	let texture = loader.load( 'images/tiles.jpg', render );
+	let material1	= new THREE.MeshLambertMaterial({
+		transparent : true,
+		map: texture,
+		side: THREE.BackSide
+	}); 
+	
+	mesh1 = new THREE.Mesh( geometry1, material1 );
+	mesh1.position.y = -1;
+	
+	sceneGroup.add( mesh1 );
+	
+	// the invisibility cloak (plane with a hole)
+	let geometry0 = new THREE.PlaneGeometry(18,18, 9,9);
+	geometry0.faces.splice(80, 2); // make hole by removing top two triangles
+	geometry0.faceVertexUvs[0].splice(80, 2);
+	
+	let material0 = new THREE.MeshBasicMaterial({
+		// map: loader.load( 'images/color-grid.png' ), // for testing placement
+		colorWrite: false,
+		// transparent: true,
+		// opacity: 0.4
+		// wireframe:true
+	});
+	
+	
+	let mesh0 = new THREE.Mesh( geometry0, material0 );
+	mesh0.scale.set(3,2,1);
+	
+	mesh0.rotation.x = -Math.PI/2;
+	sceneGroup.add(mesh0);	
 }
 
 
 function update()
 {
+	if ( kanjiMarker.visible )
+		kanjiGroup.add( sceneGroup );
+	else if ( aMarker.visible )
+		aGroup.add( sceneGroup );
+	else if ( bMarker.visible )
+		bGroup.add( sceneGroup );
+	else if ( cMarker.visible )
+		cGroup.add( sceneGroup );
+	else if ( dMarker.visible )
+		dGroup.add( sceneGroup );
+	
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
