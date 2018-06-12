@@ -2,6 +2,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<title>Hello, world!</title>
+	<script src='js/keyboard.js'></script>
 	<!-- include three.js library -->
 	<script src='js/three.js'></script>
 	<!-- include jsartookit -->
@@ -23,7 +24,7 @@
 
 <script>
 
-var scene, camera, renderer, clock, deltaTime, totalTime;
+var scene, camera, renderer, clock, deltaTime, totalTime, keyboard;
 
 var arToolkitSource, arToolkitContext;
 
@@ -59,7 +60,7 @@ function initialize()
 	clock = new THREE.Clock();
 	deltaTime = 0;
 	totalTime = 0;
-	
+	keyboard = new Keyboard();
 	////////////////////////////////////////////////////////////
 	// setup arToolkitSource
 	////////////////////////////////////////////////////////////
@@ -155,6 +156,8 @@ function initialize()
 
 function update()
 {
+	keyboard.update();
+	
 	mesh1.rotation.y += 0.01;
 	
 	if ( kanjiMarker.visible )
@@ -164,6 +167,32 @@ function update()
 	else if ( bMarker.visible )
 	{
 		bGroup.add( sceneGroup );
+	}
+	
+	if ( kanjiMarker.visible && bMarker.visible )
+	{
+		console.log("both");
+		
+		// not great
+		// let offsetPosition = kanjiMarker.position.clone().sub( bMarker.position.clone() );
+		// console.log(offsetPosition);
+		
+		let relativePosition = bMarker.worldToLocal( kanjiMarker.position.clone() );
+		bGroup.position.copy( relativePosition );
+		
+		let relativeRotation = kanjiMarker.quaternion.clone().multiply( bMarker.quaternion.clone().inverse() );	
+		bGroup.quaternion.copy( relativeRotation );
+		
+		if ( keyboard.isKeyPressed("1") )
+			console.log(relativePosition);
+		
+		/*
+		let relativePosition = plane.worldToLocal( mover.position.clone() );
+		secondMover.position.copy( secondPlane.localToWorld( relativePosition ) );
+	
+		let relativeRotation = mover.quaternion.clone().multiply( plane.quaternion.clone().inverse() );	
+		secondMover.quaternion.copy( relativeRotation.multiply(secondPlane.quaternion) ); 
+		*/
 	}
 	
 	// update artoolkit on every frame

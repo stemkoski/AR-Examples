@@ -27,9 +27,8 @@ var scene, camera, renderer, clock, deltaTime, totalTime;
 
 var arToolkitSource, arToolkitContext;
 
-var markerRoot1, markerRoot2;
-
-var mesh1;
+var patternArray, markerRootArray, markerGroupArray;
+var sceneGroup;
 
 initialize();
 animate();
@@ -105,33 +104,138 @@ function initialize()
 	// setup markerRoots
 	////////////////////////////////////////////////////////////
 
-	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/border.png' );
+	markerRootArray  = [];
+	markerGroupArray = [];
+	patternArray = ["letterA", "letterB", "letterC", "letterD", "letterF", "kanji"];
+	
+	let rotationArray = [ new THREE.Vector3(-Math.PI/2,0,0), new THREE.Vector3(0,-Math.PI/2,Math.PI/2), new THREE.Vector3(Math.PI/2, 0, Math.PI), 
+		new THREE.Vector3(-Math.PI/2,Math.PI/2,0), new THREE.Vector3(Math.PI,0,0), new THREE.Vector3(0,0,0) ];
 		
-	markerRootArray = [];
-	meshArray = [];
-		
-	let patternArray = ["letterA", "letterB", "letterC", "letterD", "letterF", "kanji", "hiro"];
-	let colorArray   = [0xff0000, 0xff8800, 0xffff00, 0x00cc00, 0x0000ff, 0xcc00ff, 0xcccccc];
-	for (let i = 0; i < 7; i++)
+	for (let i = 0; i < 6; i++)
 	{
 		let markerRoot = new THREE.Group();
+		markerRootArray.push( markerRoot );
 		scene.add(markerRoot);
 		let markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
 			type : 'pattern', patternUrl : "data/" + patternArray[i] + ".patt",
 		});
 	
-		let mesh = new THREE.Mesh( 
-			new THREE.CubeGeometry(1.25,1.25,1.25), 
-			new THREE.MeshBasicMaterial({color:colorArray[i], map:texture, transparent:true, opacity:0.99}) 
-		);
-		mesh.position.y = -1.25/2;
-		// mesh.visible = false;
-		markerRoot.add( mesh );
+		let markerGroup = new THREE.Group();
+		markerGroupArray.push( markerGroup );
+		markerGroup.position.y = -1.25/2;
+		markerGroup.rotation.setFromVector3( rotationArray[i] );
 		
-		markerRootArray.push(markerRoot);
-		meshArray.push(mesh);
+		markerRoot.add( markerGroup );
 	}
+	
+	////////////////////////////////////////////////////////////
+	// setup scene
+	////////////////////////////////////////////////////////////
+	
+	sceneGroup = new THREE.Group();
+	// a 1x1x1 cube model with scale factor 1.25 fills up the physical cube
+	sceneGroup.scale.set(1.25/2, 1.25/2, 1.25/2);
+	
+	let loader = new THREE.TextureLoader();
+	
+	/*
+	// a simple cube
+	let materialArray = [
+		new THREE.MeshBasicMaterial( { map: loader.load("images/xpos.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/xneg.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/ypos.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/yneg.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/zpos.png") } ),
+		new THREE.MeshBasicMaterial( { map: loader.load("images/zneg.png") } ),
+	];
+	let mesh = new THREE.Mesh( new THREE.CubeGeometry(1,1,1), materialArray );
+	sceneGroup.add( mesh );
+	*/
+	
+	let tileTexture = loader.load("images/tiles.jpg");
+	
+	// reversed cube
+	sceneGroup.add( 
+		new THREE.Mesh(
+			new THREE.BoxGeometry(2,2,2),
+			new THREE.MeshBasicMaterial({
+				map: tileTexture,
+				side: THREE.BackSide,
+			})
+		)
+	);
+	
+	// cube vertices
+	
+	let sphereGeometry = new THREE.SphereGeometry(0.20, 6,6);
+	
+	let sphereCenters = [ 
+		new THREE.Vector3(-1,-1,-1), new THREE.Vector3(-1,-1,1), new THREE.Vector3(-1,1,-1), new THREE.Vector3(-1,1,1),
+		new THREE.Vector3( 1,-1,-1), new THREE.Vector3( 1,-1,1), new THREE.Vector3( 1,1,-1), new THREE.Vector3( 1,1,1),
+	];
+	
+	let sphereColors = [ 0x444444, 0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff ];
+	
+	for (let i = 0; i < 8; i++)
+	{
+		let sphereMesh = new THREE.Mesh( 
+			sphereGeometry, 
+			new THREE.MeshLambertMaterial({
+				map: tileTexture,
+				color: sphereColors[i]
+			})
+		);
+		sphereMesh.position.copy( sphereCenters[i] );
+		sceneGroup.add(sphereMesh);
+	}
+	
+	// cube edges
+	
+	let edgeGeometry = new THREE.CylinderGeometry( 0.05, 0.05, 2, 32 );
+	
+	let edgeCenters = [
+		new THREE.Vector3(0, -1, -1), new THREE.Vector3(0, 1, -1), new THREE.Vector3(0, -1, 1), new THREE.Vector3(0, 1, 1),
+		new THREE.Vector3(-1, 0, -1), new THREE.Vector3(1, 0, -1), new THREE.Vector3(-1, 0, 1), new THREE.Vector3(1, 0, 1),
+		new THREE.Vector3(-1, -1, 0), new THREE.Vector3(1, -1, 0), new THREE.Vector3(-1, 1, 0), new THREE.Vector3(1, 1, 0)
+	];
+	
+	let edgeRotations = [
+		new THREE.Vector3(0,0,Math.PI/2), new THREE.Vector3(0,0,Math.PI/2), new THREE.Vector3(0,0,Math.PI/2), new THREE.Vector3(0,0,Math.PI/2),
+		new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0),
+		new THREE.Vector3(Math.PI/2,0,0), new THREE.Vector3(Math.PI/2,0,0), new THREE.Vector3(Math.PI/2,0,0), new THREE.Vector3(Math.PI/2,0,0)
+	];
+	
+	let edgeColors = [
+		0x880000, 0x880000, 0x880000, 0x880000,
+		0x008800, 0x008800, 0x008800, 0x008800,
+		0x000088, 0x000088, 0x000088, 0x000088
+	];
+	
+	for (let i = 0; i < 12; i++)
+	{
+		let edge = new THREE.Mesh(
+			edgeGeometry,
+			new THREE.MeshLambertMaterial({ 
+				map: tileTexture,
+				color: edgeColors[i] 
+			})
+		);
+		edge.position.copy( edgeCenters[i] );
+		edge.rotation.setFromVector3( edgeRotations[i] );
+
+		sceneGroup.add(edge);
+	}
+	
+	sceneGroup.add(
+		new THREE.Mesh(
+			new THREE.TorusKnotGeometry(0.5, 0.1),
+			new THREE.MeshNormalMaterial()
+		)
+	);
+	
+	let pointLight = new THREE.PointLight( 0xffffff, 1, 50 );
+	pointLight.position.set(0.5,3,2);
+	scene.add( pointLight );
 }
 
 
@@ -141,22 +245,16 @@ function update()
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
 	
-	
 	for (let i = 0; i < 6; i++)
 	{
-		//if ( markerRootArray[i].visible )
-		//	console.log("Visible: " + i );
-		meshArray[i].visible = false;
+		if ( markerRootArray[i].visible )
+		{
+			markerGroupArray[i].add( sceneGroup );
+			console.log("visible: " + patternArray[i]);
+			break;
+		}
 	}
 	
-	
-	if (markerRootArray[0].visible) meshArray[0].visible = true;
-	else if (markerRootArray[1].visible) meshArray[1].visible = true;
-	else if (markerRootArray[2].visible) meshArray[2].visible = true;
-	else if (markerRootArray[3].visible) meshArray[3].visible = true;
-	else if (markerRootArray[4].visible) meshArray[4].visible = true;
-	else if (markerRootArray[5].visible) meshArray[5].visible = true;
-		
 }
 
 
