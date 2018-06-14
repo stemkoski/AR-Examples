@@ -28,10 +28,11 @@ var scene, camera, renderer, clock, deltaTime, totalTime, keyboard;
 
 var arToolkitSource, arToolkitContext;
 
-var kanjiMarker, bMarker;
-var kanjiGroup, bGroup, sceneGroup;
+var markerArray;
 
-var mesh1;
+var sceneGroup;
+
+var globe;
 
 initialize();
 animate();
@@ -61,6 +62,7 @@ function initialize()
 	deltaTime = 0;
 	totalTime = 0;
 	keyboard = new Keyboard();
+	
 	////////////////////////////////////////////////////////////
 	// setup arToolkitSource
 	////////////////////////////////////////////////////////////
@@ -107,92 +109,75 @@ function initialize()
 	// setup markerRoots
 	////////////////////////////////////////////////////////////
 
-	// build markerControls
-	kanjiMarker = new THREE.Group();
-	scene.add(kanjiMarker);
-	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, kanjiMarker, {
-		type: 'pattern', patternUrl: "data/kanji.patt",
-	})
-	kanjiGroup = new THREE.Group();
-	kanjiMarker.add(kanjiGroup);
+	let markerNames = ["kanji", "letterA", "letterB"];
 	
-	bMarker = new THREE.Group();
-	scene.add(bMarker);
-	let markerControls2 = new THREEx.ArMarkerControls(arToolkitContext, bMarker, {
-		type: 'pattern', patternUrl: "data/letterB.patt",
-	})
-	bGroup = new THREE.Group();
-	bMarker.add(bGroup);
+	markerArray = [];
 	
-	// relative position of B marker to Kanji marker
-	bGroup.position.x = -3.75;
+	for (let i = 0; i < markerNames.length; i++)
+	{
+		let marker = new THREE.Group();
+		scene.add(marker);
+		markerArray.push(marker);
+		
+		let markerControls = new THREEx.ArMarkerControls(arToolkitContext, marker, {
+			type: 'pattern', patternUrl: "data/" + markerNames[i] + ".patt",
+		});
+		
+		let markerGroup = new THREE.Group();
+		marker.add(markerGroup);
+	}
 	
-	// set up the scene
+	////////////////////////////////////////////////////////////
+	// setup scene
+	////////////////////////////////////////////////////////////
+	
 	sceneGroup = new THREE.Group();
 	
 	let loader = new THREE.TextureLoader();
 	
 	let geometry1 = new THREE.SphereGeometry(1, 32,32);	
-	let texture = loader.load( 'images/earth-sphere.jpg', render );
+	let texture = loader.load( 'images/earth-sphere.jpg' );
 	let material1 = new THREE.MeshLambertMaterial( { map: texture, opacity: 0.75 } );
-	mesh1 = new THREE.Mesh( geometry1, material1 );
-	mesh1.position.y = 1;
-	sceneGroup.add(mesh1);
+	globe = new THREE.Mesh( geometry1, material1 );
+	globe.position.y = 1;
+	sceneGroup.add(globe); 
 	
-	let pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
-	pointLight.position.set(0.5,3,2);
-	// create a mesh to help visualize the position of the light
-	pointLight.add( 
-		new THREE.Mesh( 
-			new THREE.SphereBufferGeometry( 0.05, 16,8 ), 
-			new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.05 }) 
-		) 
-	);
-	sceneGroup.add( pointLight );
-	
+	let pointLight = new THREE.PointLight( 0xffffff, 1, 50 );
+	camera.add( pointLight );
 }
-
 
 
 function update()
 {
 	keyboard.update();
 	
-	mesh1.rotation.y += 0.01;
+	globe.rotation.y += 0.01;
 	
-	if ( kanjiMarker.visible )
+	for (let i = 0; i < markerArray.length; i++)
 	{
-		kanjiGroup.add( sceneGroup );
+		if ( markerArray[i].visible )
+		{
+			markerArray[i].children[0].add( sceneGroup );
+			break;
+		}
 	}
-	else if ( bMarker.visible )
-	{
-		bGroup.add( sceneGroup );
-	}
+
+	let baseMarker = markerArray[0];
 	
-	if ( kanjiMarker.visible && bMarker.visible )
+	for (let i = 1; i < markerArray.length; i++)
 	{
-		console.log("both");
-		
-		// not great
-		// let offsetPosition = kanjiMarker.position.clone().sub( bMarker.position.clone() );
-		// console.log(offsetPosition);
-		
-		let relativePosition = bMarker.worldToLocal( kanjiMarker.position.clone() );
-		bGroup.position.copy( relativePosition );
-		
-		let relativeRotation = kanjiMarker.quaternion.clone().multiply( bMarker.quaternion.clone().inverse() );	
-		bGroup.quaternion.copy( relativeRotation );
-		
-		if ( keyboard.isKeyPressed("1") )
-			console.log(relativePosition);
-		
-		/*
-		let relativePosition = plane.worldToLocal( mover.position.clone() );
-		secondMover.position.copy( secondPlane.localToWorld( relativePosition ) );
-	
-		let relativeRotation = mover.quaternion.clone().multiply( plane.quaternion.clone().inverse() );	
-		secondMover.quaternion.copy( relativeRotation.multiply(secondPlane.quaternion) ); 
-		*/
+		let currentMarker = markerArray[i];
+		let currentGroup  = currentMarker.children[0];
+		if ( baseMarker.visible && currentMarker.visible )
+		{
+			// console.log("updating marker " + i " -> base offset");
+			
+			let relativePosition = currentMarker.worldToLocal( baseMarker.position.clone() );
+			currentGroup.position.copy( relativePosition );
+			
+			let relativeRotation = currentMarker.quaternion.clone().inverse().multiply( baseMarker.quaternion.clone() );
+			currentGroup.quaternion.copy( relativeRotation );
+		}
 	}
 	
 	// update artoolkit on every frame
