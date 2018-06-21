@@ -2,6 +2,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<title>Hello, world!</title>
+	<script src='js/keyboard.js'></script>
 	<!-- include three.js library -->
 	<script src='js/three.js'></script>
 	<!-- include jsartookit -->
@@ -23,14 +24,15 @@
 
 <script>
 
-var scene, camera, renderer, clock, deltaTime, totalTime;
+var scene, camera, renderer, clock, deltaTime, totalTime, keyboard;
 
 var arToolkitSource, arToolkitContext;
 
-var kanjiMarker, aMarker, bMarker, cMarker, dMarker;
-var kanjiGroup, aGroup, bGroup, cGroup, dGroup, sceneGroup;
+var markerNames, markerArray, currentMarkerName;
 
-var mesh1;
+var sceneGroup;
+
+var mesh1; // rotating targets?
 
 initialize();
 animate();
@@ -59,6 +61,7 @@ function initialize()
 	clock = new THREE.Clock();
 	deltaTime = 0;
 	totalTime = 0;
+	keyboard = new Keyboard();
 	
 	////////////////////////////////////////////////////////////
 	// setup arToolkitSource
@@ -106,51 +109,23 @@ function initialize()
 	// setup markerRoots
 	////////////////////////////////////////////////////////////
 
-	kanjiMarker = new THREE.Group();
-	scene.add(kanjiMarker);
-	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, kanjiMarker, {
-		type: 'pattern', patternUrl: "data/kanji.patt",
-	});
-	kanjiGroup = new THREE.Group();
-	kanjiMarker.add(kanjiGroup);
+	markerNames = ["kanji", "letterA", "letterB", "letterC", "letterD"];
 	
-	aMarker = new THREE.Group();
-	scene.add(aMarker);
-	let markerControlsA = new THREEx.ArMarkerControls(arToolkitContext, aMarker, {
-		type: 'pattern', patternUrl: "data/letterA.patt",
-	});
-	aGroup = new THREE.Group();
-	aMarker.add(aGroup);
+	markerArray = [];
 	
-	bMarker = new THREE.Group();
-	scene.add(bMarker);
-	let markerControlsB = new THREEx.ArMarkerControls(arToolkitContext, bMarker, {
-		type: 'pattern', patternUrl: "data/letterB.patt",
-	});
-	bGroup = new THREE.Group();
-	bMarker.add(bGroup);
-	
-	cMarker = new THREE.Group();
-	scene.add(cMarker);
-	let markerControlsC = new THREEx.ArMarkerControls(arToolkitContext, cMarker, {
-		type: 'pattern', patternUrl: "data/letterC.patt",
-	});
-	cGroup = new THREE.Group();
-	cMarker.add(cGroup);
-
-	dMarker = new THREE.Group();
-	scene.add(dMarker);
-	let markerControlsD = new THREEx.ArMarkerControls(arToolkitContext, dMarker, {
-		type: 'pattern', patternUrl: "data/letterD.patt",
-	});
-	dGroup = new THREE.Group();
-	dMarker.add(dGroup);
-
-	// set relative positions of letter markers to Kanji marker
-	aGroup.position.set( 2.50, 0, 1.25);
-	bGroup.position.set(-2.50, 0, 1.25);
-	cGroup.position.set( 2.50, 0, -1.25);
-	dGroup.position.set(-2.50, 0, -1.25);
+	for (let i = 0; i < markerNames.length; i++)
+	{
+		let marker = new THREE.Group();
+		scene.add(marker);
+		markerArray.push(marker);
+		
+		let markerControls = new THREEx.ArMarkerControls(arToolkitContext, marker, {
+			type: 'pattern', patternUrl: "data/" + markerNames[i] + ".patt",
+		});
+		
+		let markerGroup = new THREE.Group();
+		marker.add(markerGroup);
+	}
 	
 	////////////////////////////////////////////////////////////
 	// setup scene
@@ -179,7 +154,7 @@ function initialize()
 	geometry0.faceVertexUvs[0].splice(80, 2);
 	
 	let material0 = new THREE.MeshBasicMaterial({
-		// map: loader.load( 'images/color-grid.png' ), // for testing placement
+	    // map: loader.load( 'images/color-grid.png' ), // for testing placement
 		colorWrite: false,
 		// transparent: true,
 		// opacity: 0.4
@@ -197,16 +172,59 @@ function initialize()
 
 function update()
 {
-	if ( kanjiMarker.visible )
-		kanjiGroup.add( sceneGroup );
-	else if ( aMarker.visible )
-		aGroup.add( sceneGroup );
-	else if ( bMarker.visible )
-		bGroup.add( sceneGroup );
-	else if ( cMarker.visible )
-		cGroup.add( sceneGroup );
-	else if ( dMarker.visible )
-		dGroup.add( sceneGroup );
+	keyboard.update();
+	
+	let anyMarkerVisible = false;
+	for (let i = 0; i < markerArray.length; i++)
+	{
+		if ( markerArray[i].visible )
+		{
+			anyMarkerVisible = true;
+			markerArray[i].children[0].add( sceneGroup );
+			if ( currentMarkerName != markerNames[i] )
+			{
+				currentMarkerName = markerNames[i];
+				console.log("Switching to " + currentMarkerName);
+			}
+			
+			let p = markerArray[i].children[0].getWorldPosition();
+			let q = markerArray[i].children[0].getWorldQuaternion();
+			let s = markerArray[i].children[0].getWorldScale();
+			let lerpAmount = 0.2;
+			
+			scene.add(sceneGroup);
+			sceneGroup.position.lerp(p, lerpAmount);
+			sceneGroup.quaternion.slerp(q, lerpAmount);
+			sceneGroup.scale.lerp(s, lerpAmount);
+
+			break;
+		}
+	}
+
+	if ( !anyMarkerVisible )
+	{
+		console.log("No marker currently visible.");
+		scene.visible = false;
+	}
+	else
+		scene.visible = true;
+	
+	let baseMarker = markerArray[0];
+	
+	// update relative positions of markers
+	for (let i = 1; i < markerArray.length; i++)
+	{
+		let currentMarker = markerArray[i];
+		let currentGroup  = currentMarker.children[0];
+		if ( baseMarker.visible && currentMarker.visible )
+		{	
+			let relativePosition = currentMarker.worldToLocal( baseMarker.position.clone() );
+			currentGroup.position.copy( relativePosition );
+			
+			let relativeRotation = currentMarker.quaternion.clone().inverse().multiply( baseMarker.quaternion.clone() );
+			currentGroup.quaternion.copy( relativeRotation );
+		}
+	}
 	
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )

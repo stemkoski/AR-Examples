@@ -28,7 +28,7 @@ var scene, camera, renderer, clock, deltaTime, totalTime, keyboard;
 
 var arToolkitSource, arToolkitContext;
 
-var markerArray;
+var markerNames, markerArray, currentMarkerName;
 
 var sceneGroup;
 
@@ -97,7 +97,8 @@ function initialize()
 	// create atToolkitContext
 	arToolkitContext = new THREEx.ArToolkitContext({
 		cameraParametersUrl: 'data/camera_para.dat',
-		detectionMode: 'mono'
+		detectionMode: 'mono',
+		maxDetectionRate: 30,
 	});
 	
 	// copy projection matrix to camera when initialization complete
@@ -109,7 +110,7 @@ function initialize()
 	// setup markerRoots
 	////////////////////////////////////////////////////////////
 
-	let markerNames = ["kanji", "letterA", "letterB"];
+	markerNames = ["kanji", "letterA", "letterB"];
 	
 	markerArray = [];
 	
@@ -142,6 +143,9 @@ function initialize()
 	globe.position.y = 1;
 	sceneGroup.add(globe); 
 	
+	markerArray[0].children[0].add( sceneGroup );
+	currentMarkerName = markerNames[0];
+	
 	let pointLight = new THREE.PointLight( 0xffffff, 1, 50 );
 	camera.add( pointLight );
 }
@@ -153,17 +157,41 @@ function update()
 	
 	globe.rotation.y += 0.01;
 	
+	let anyMarkerVisible = false;
 	for (let i = 0; i < markerArray.length; i++)
 	{
 		if ( markerArray[i].visible )
 		{
+			anyMarkerVisible = true;
 			markerArray[i].children[0].add( sceneGroup );
+			if ( currentMarkerName != markerNames[i] )
+			{
+				currentMarkerName = markerNames[i];
+				// console.log("Switching to " + currentMarkerName);
+			}
+			
+			let p = markerArray[i].children[0].getWorldPosition();
+			let q = markerArray[i].children[0].getWorldQuaternion();
+			let s = markerArray[i].children[0].getWorldScale();
+			let lerpAmount = 0.5;
+			
+			scene.add(sceneGroup);
+			sceneGroup.position.lerp(p, lerpAmount);
+			sceneGroup.quaternion.slerp(q, lerpAmount);
+			sceneGroup.scale.lerp(s, lerpAmount);
+
 			break;
 		}
 	}
 
+	if ( !anyMarkerVisible )
+	{
+		// console.log("No marker currently visible.");
+	}
+	
 	let baseMarker = markerArray[0];
 	
+	// update relative positions of markers
 	for (let i = 1; i < markerArray.length; i++)
 	{
 		let currentMarker = markerArray[i];
