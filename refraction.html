@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<title>Hello, world!</title>
+	<!-- include three.js library -->
+	<script src='js/three.js'></script>
+	<!-- include jsartookit -->
+	<script src="jsartoolkit5/artoolkit.min.js"></script>
+	<script src="jsartoolkit5/artoolkit.api.js"></script>
+	<!-- include threex.artoolkit -->
+	<script src="threex/threex-artoolkitsource.js"></script>
+	<script src="threex/threex-artoolkitcontext.js"></script>
+	<script src="threex/threex-arbasecontrols.js"></script>
+	<script src="threex/threex-armarkercontrols.js"></script>
+</head>
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
+
+<!-- 
+  Example created by Lee Stemkoski: https://github.com/stemkoski
+  Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
+-->
+
+<!-- ---------------- Custom Shader Code ------------------------ -->
+<script id="vertexShader" type="x-shader/x-vertex">
+uniform float refractionRatio;
+varying vec3 vRefract;
+void main() 
+{ 
+	vec4 mPosition = modelMatrix * vec4( position, 1.0 );
+	vec3 nWorld = normalize( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
+	vRefract = normalize( refract( normalize( mPosition.xyz - cameraPosition ), nWorld, refractionRatio ) );
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}
+</script>
+
+<script id="fragmentShader" type="x-shader/x-vertex"> 
+uniform sampler2D texture;
+varying vec3 vRefract;
+uniform float distance;
+uniform float opacity;
+uniform vec3 tint;
+void main() 
+{
+	vec2 p = vec2( vRefract.x * distance + 0.5, vRefract.y * distance + 0.5 );
+	p = vec2(1.0, 1.0) - p;
+	vec3 color = texture2D( texture, p ).rgb;
+	gl_FragColor = vec4( color, opacity ) * vec4( tint, 1.0 );
+}  
+</script>
+<!-- ----------------------------------------------------------- -->
+
+<script>
+
+var scene, camera, renderer, clock, deltaTime, totalTime;
+
+var arToolkitSource, arToolkitContext;
+
+var markerRoot1;
+
+var material1, mesh1;
+
+initialize();
+animate();
+
+function initialize()
+{
+	scene = new THREE.Scene();
+
+	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
+	scene.add( ambientLight );
+				
+	camera = new THREE.Camera();
+	scene.add(camera);
+
+	renderer = new THREE.WebGLRenderer({
+		antialias : true,
+		alpha: true
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	renderer.setSize( 640, 480 );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
+
+	clock = new THREE.Clock();
+	deltaTime = 0;
+	totalTime = 0;
+	
+	////////////////////////////////////////////////////////////
+	// setup arToolkitSource
+	////////////////////////////////////////////////////////////
+
+	arToolkitSource = new THREEx.ArToolkitSource({
+		sourceType : 'webcam',
+	});
+
+	function onResize()
+	{
+		arToolkitSource.onResize()	
+		arToolkitSource.copySizeTo(renderer.domElement)	
+		if ( arToolkitContext.arController !== null )
+		{
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
+		}	
+	}
+
+	arToolkitSource.init(function onReady(){
+		onResize()
+	});
+	
+	// handle resize event
+	window.addEventListener('resize', function(){
+		onResize()
+	});
+	
+	////////////////////////////////////////////////////////////
+	// setup arToolkitContext
+	////////////////////////////////////////////////////////////	
+
+	// create atToolkitContext
+	arToolkitContext = new THREEx.ArToolkitContext({
+		cameraParametersUrl: 'data/camera_para.dat',
+		detectionMode: 'mono'
+	});
+	
+	// copy projection matrix to camera when initialization complete
+	arToolkitContext.init( function onCompleted(){
+		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
+	});
+
+	////////////////////////////////////////////////////////////
+	// setup markerRoots
+	////////////////////////////////////////////////////////////
+
+	// build markerControls
+	markerRoot1 = new THREE.Group();
+	scene.add(markerRoot1);
+	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, markerRoot1, {
+		type: 'pattern', patternUrl: "data/kanji.patt",
+	})
+
+	////////////////////////////////////////////////////////////
+	// setup scene
+	////////////////////////////////////////////////////////////
+	
+	let loader = new THREE.TextureLoader();
+	
+	let videoTexture = new THREE.VideoTexture( arToolkitSource.domElement );
+	videoTexture.minFilter = THREE.LinearFilter;
+	
+	let refractMaterial = new THREE.ShaderMaterial({
+		uniforms: {
+			texture: { value: videoTexture },
+			refractionRatio: { value: 0.75 },
+			distance: { value: 1.0 },
+			opacity: { value: 1.0 },
+			tint: { value: new THREE.Vector3(0.8, 0.8, 1.0) }
+		},
+		vertexShader: document.getElementById( 'vertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+		transparent: true
+	});
+	
+	reflectMesh = new THREE.Mesh( 
+		new THREE.TorusKnotGeometry(1, 0.4, 128, 16), // new THREE.SphereBufferGeometry(1, 32, 32), 
+		refractMaterial 
+	);
+	
+	reflectMesh.position.y = 1;
+		
+	markerRoot1.add( reflectMesh );
+}
+
+function update()
+{
+	// update artoolkit on every frame
+	if ( arToolkitSource.ready !== false )
+		arToolkitContext.update( arToolkitSource.domElement );
+		
+	reflectMesh.rotation.y -= 0.01;
+}
+
+
+function render()
+{
+	renderer.render( scene, camera );
+}
+
+
+function animate()
+{
+	requestAnimationFrame(animate);
+	deltaTime = clock.getDelta();
+	totalTime += deltaTime;
+	update();
+	render();
+}
+
+</script>
+
+</body>
+</html>
