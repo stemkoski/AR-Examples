@@ -81,10 +81,12 @@ a:hover
 
 a .superImage
 {  
-	height: 148px;
+	height: 150px;
+	width: 225px;
 	border: 1px solid #000000;
 	margin: 0px 20px 0px 0px;
 	float:left;
+	
 	
 	/* Rounded corners */
 	-moz-border-radius: 15px 15px 15px 15px;

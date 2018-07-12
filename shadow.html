@@ -21,34 +21,6 @@
   Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
 -->
 
-<!-- ---------------- Custom Shader Code ------------------------ -->
-<script id="vertexShader" type="x-shader/x-vertex">
-uniform float refractionRatio;
-varying vec3 vRefract;
-void main() 
-{ 
-	vec4 mPosition = modelMatrix * vec4( position, 1.0 );
-	vec3 nWorld = normalize( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
-	vRefract = normalize( refract( normalize( mPosition.xyz - cameraPosition ), nWorld, refractionRatio ) );
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-}
-</script>
-
-<script id="fragmentShader" type="x-shader/x-vertex"> 
-uniform sampler2D texture;
-varying vec3 vRefract;
-uniform float distance;
-uniform float opacity;
-uniform vec3 tint;
-void main() 
-{
-	vec2 p = vec2( vRefract.x * distance + 0.5, vRefract.y * distance + 0.5 );
-	p = vec2(1.0, 1.0) - p;
-	vec3 color = texture2D( texture, p ).rgb;
-	gl_FragColor = vec4( color, opacity ) * vec4( tint, 1.0 );
-}  
-</script>
-<!-- ----------------------------------------------------------- -->
 
 <script>
 
@@ -66,9 +38,6 @@ animate();
 function initialize()
 {
 	scene = new THREE.Scene();
-
-	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
-	scene.add( ambientLight );
 				
 	camera = new THREE.Camera();
 	scene.add(camera);
@@ -145,32 +114,58 @@ function initialize()
 	// setup scene
 	////////////////////////////////////////////////////////////
 	
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	
 	let loader = new THREE.TextureLoader();
-	
-	let videoTexture = new THREE.VideoTexture( arToolkitSource.domElement );
-	videoTexture.minFilter = THREE.LinearFilter;
-	
-	let refractMaterial = new THREE.ShaderMaterial({
-		uniforms: {
-			texture: { value: videoTexture },
-			refractionRatio: { value: 0.75 },
-			distance: { value: 1.0 },
-			opacity: { value: 0.8 },
-			tint: { value: new THREE.Vector3(0.8, 0.8, 1.0) }
-		},
-		vertexShader: document.getElementById( 'vertexShader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-		transparent: true
-	});
-	
-	reflectMesh = new THREE.Mesh( 
-		new THREE.TorusKnotGeometry(1, 0.4, 128, 16), // new THREE.SphereBufferGeometry(1, 32, 32), 
-		refractMaterial 
-	);
-	
-	reflectMesh.position.y = 1;
 		
-	markerRoot1.add( reflectMesh );
+	let sceneGroup = new THREE.Group();
+	markerRoot1.add(sceneGroup);
+	
+	let texture = loader.load("images/color-grid.png");
+	// repeat texture
+	texture.wrapS = THREE.RepeatWrapping;
+	texture.wrapT = THREE.RepeatWrapping;
+	texture.repeat.set(8,1);
+	
+	shadowMesh = new THREE.Mesh( 
+		new THREE.TorusKnotGeometry(0.5, 0.2, 128, 16), // new THREE.SphereBufferGeometry(1, 32, 32), 
+		new THREE.MeshLambertMaterial({ map: texture })
+	);
+	shadowMesh.position.y = 1;
+	shadowMesh.castShadow = true;
+	shadowMesh.receiveShadow = true;
+	sceneGroup.add( shadowMesh );
+	
+	let floorGeometry = new THREE.PlaneGeometry( 20,20 );
+	let floorMaterial = new THREE.ShadowMaterial();
+	floorMaterial.opacity = 0.3;
+	let floorMesh = new THREE.Mesh( floorGeometry, floorMaterial );
+	floorMesh.rotation.x = -Math.PI/2;
+	floorMesh.receiveShadow = true;
+	sceneGroup.add( floorMesh );
+
+	
+	let light = new THREE.PointLight( 0xffffff, 1, 100 );
+	light.position.set( 0,4,0 ); // default; light shining from top
+	light.castShadow = true;
+	sceneGroup.add( light );
+	
+	let lightSphere = new THREE.Mesh(
+		new THREE.SphereGeometry(0.1),
+		new THREE.MeshBasicMaterial({
+			color: 0xffffff,
+			transparent: true,
+			opacity: 0.8
+		})
+	);
+	lightSphere.position.copy( light.position );
+	sceneGroup.add( lightSphere );
+	
+	let ambientLight = new THREE.AmbientLight( 0x666666 );
+	sceneGroup.add( ambientLight );
+	// let helper = new THREE.CameraHelper( light.shadow.camera );
+	// sceneGroup.add( helper );
 }
 
 function update()
@@ -179,7 +174,7 @@ function update()
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
 		
-	reflectMesh.rotation.y -= 0.01;
+	shadowMesh.rotation.y -= 0.01;
 }
 
 
