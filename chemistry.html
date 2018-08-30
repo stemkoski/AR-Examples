@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<title>Hello, world!</title>
+	<!-- include three.js library -->
+	<script src='js/three.js'></script>
+	<script src='js/stats.min.js'></script>
+	<!-- include jsartookit -->
+	<script src="jsartoolkit5/artoolkit.min.js"></script>
+	<script src="jsartoolkit5/artoolkit.api.js"></script>
+	<!-- include threex.artoolkit -->
+	<script src="threex/threex-artoolkitsource.js"></script>
+	<script src="threex/threex-artoolkitcontext.js"></script>
+	<script src="threex/threex-arbasecontrols.js"></script>
+	<script src="threex/threex-armarkercontrols.js"></script>
+	<script src="threex/threex-arsmoothedcontrols.js"></script>
+</head>
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
+
+<!-- 
+  Example created by Lee Stemkoski: https://github.com/stemkoski
+  Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
+-->
+
+
+<script>
+
+var scene, camera, renderer, clock, deltaTime, totalTime, stats;
+
+var arToolkitSource, arToolkitContext;
+
+var markerRoot1;
+
+var material1, mesh1;
+
+initialize();
+animate();
+
+function initialize()
+{
+	scene = new THREE.Scene();
+				
+	camera = new THREE.Camera();
+	scene.add(camera);
+
+	renderer = new THREE.WebGLRenderer({
+		antialias : true,
+		alpha: true
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	renderer.setSize( 640, 480 );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
+
+	clock = new THREE.Clock();
+	deltaTime = 0;
+	totalTime = 0;
+	
+	stats = new Stats();
+	document.body.appendChild( stats.dom );
+	
+	// lights for the scene to make spheres look round
+	let sceneLight = new THREE.PointLight( 0xffffff, 0.5, 100 );
+	scene.add( sceneLight );
+	let ambientLight = new THREE.AmbientLight( 0x666666 );
+	scene.add( ambientLight );
+	
+	////////////////////////////////////////////////////////////
+	// setup arToolkitSource
+	////////////////////////////////////////////////////////////
+
+	arToolkitSource = new THREEx.ArToolkitSource({
+		sourceType : 'webcam',
+	});
+
+	function onResize()
+	{
+		arToolkitSource.onResize()	
+		arToolkitSource.copySizeTo(renderer.domElement)	
+		if ( arToolkitContext.arController !== null )
+		{
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
+		}	
+	}
+
+	arToolkitSource.init(function(){
+		onResize()
+	});
+	
+	// handle resize event
+	window.addEventListener('resize', function(){
+		onResize()
+	});
+	
+	////////////////////////////////////////////////////////////
+	// setup arToolkitContext
+	////////////////////////////////////////////////////////////	
+
+	// create atToolkitContext
+	arToolkitContext = new THREEx.ArToolkitContext({
+		cameraParametersUrl: 'data/camera_para.dat',
+		maxDetectionRate: 60,
+		detectionMode: "mono_and_matrix",
+		matrixCodeType: "3x3",
+		canvasWidth: 640,
+		canvasHeight: 480
+	});
+	
+	// copy projection matrix to camera when initialization complete
+	arToolkitContext.init( function onCompleted(){
+		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
+	});
+
+	////////////////////////////////////////////////////////////
+	// setup markerRoots
+	////////////////////////////////////////////////////////////
+
+	let loader = new THREE.TextureLoader();
+		
+	objectArray = [];
+	
+	function makeObject( barcodeID, elementString, nucleusColorValue, nucleusRadius, electronCount )
+	{
+		let object = {};
+		objectArray.push(object);
+	
+		let marker = new THREE.Group();
+		scene.add(marker);
+		let markerControls = new THREEx.ArMarkerControls(arToolkitContext, marker, {
+			type: 'barcode', barcodeValue: barcodeID	
+		})
+		
+		let sceneGroup = new THREE.Group();
+		scene.add(sceneGroup);
+		
+		// smoothedControls adjusts position of sceneGroup
+		let smoothedControls = new THREEx.ArSmoothedControls(sceneGroup, {
+			lerpPosition: 0.6,
+			lerpQuaternion: 0.6,
+			lerpScale: 1,
+			minUnvisibleDelay: 0.25, // when marker not visible, time to wait until model disappears
+		});
+		
+		
+		let nucleusColor = new THREE.Color(nucleusColorValue);
+		let hsl = nucleusColor.getHSL();
+		let cardColor = new THREE.Color().setHSL( hsl.h, 0.3, 0.9 );
+		let electronColor = new THREE.Color().setHSL( hsl.h, 0.3, 0.3 );
+		
+		// set up card to display text at bottom
+		let card = new THREE.Mesh(
+			new THREE.PlaneGeometry(1.25,1.25), 
+			new THREE.MeshBasicMaterial({
+				color: cardColor,
+				map:loader.load("images/chemistry/card-" + elementString + ".png")
+			})
+		);
+		card.receiveShadow = true;
+		card.rotation.x = -Math.PI/2;
+		sceneGroup.add(card);
+		
+		// nucleus
+		let nucleus = new THREE.Mesh(
+			new THREE.SphereGeometry(nucleusRadius, 16, 16),
+			new THREE.MeshLambertMaterial({
+				color: nucleusColor,
+				map:loader.load("images/chemistry/label-" + elementString + ".png")
+			})
+		);
+		nucleus.rotation.y = -Math.PI/2;
+		nucleus.position.y = 1;
+		nucleus.castShadow = true;
+		sceneGroup.add( nucleus );
+		
+		// electrons
+		let electronRadius = 0.05;
+		let electronGroup = new THREE.Group();
+		sceneGroup.add(electronGroup);
+		
+		let orbitRadius = nucleusRadius + 2 * electronRadius;
+		for (let n = 0; n < electronCount; n++)
+		{
+			let electron = new THREE.Mesh(
+				new THREE.SphereGeometry(electronRadius),
+				new THREE.MeshLambertMaterial({
+					color: electronColor
+				})
+			);
+			electron.position.set(orbitRadius * Math.cos(n * 6.283/8), 1, orbitRadius * Math.sin(n * 6.283/8));
+			electron.castShadow = true;
+			electronGroup.add(electron);
+		}
+			
+		// faked shadows
+		// set up card to display text at bottom
+		let electronShadow = new THREE.Mesh(
+			new THREE.PlaneGeometry(1.025,1.025), 
+			new THREE.MeshBasicMaterial({
+				map:loader.load("images/chemistry/shadow-" + electronCount + ".png"),
+				transparent: true,
+				opacity: 0.3,
+				side: THREE.DoubleSide // TODO: flip images to remove this
+			})
+		);
+		electronShadow.position.y = 0.02; // to reduce z-fighting
+		electronShadow.rotation.x = Math.PI/2;
+		sceneGroup.add(electronShadow);
+		
+		let nucleusGlow = new THREE.Mesh(
+			new THREE.PlaneGeometry(nucleusRadius*3, nucleusRadius*3), 
+			new THREE.MeshBasicMaterial({
+				color: 0xFFFF00,
+				map:loader.load("images/glow.png"),
+				transparent: true,
+				side: THREE.DoubleSide
+			})
+		);
+		// sceneGroup.add(nucleusGlow);
+		nucleusGlow.position.copy( nucleus.position );
+		
+		object.update = function()
+		{
+			smoothedControls.update(marker);
+			if (marker.visible)
+			{				
+				electronGroup.rotation.y += 0.02;
+				electronShadow.rotation.z -= 0.02; // TODO: flip images to reverse this, or set = rotation.y
+				// set rotation towards camera - (0,0,0)
+				//var q = new THREE.Quaternion();
+				//q.setFromUnitVectors( new THREE.Vector3(0,1,0), nucleus.getWorldPosition().clone().normalize() );
+				//nucleusGlow.quaternion.copy(q);
+				//console.log(q)
+			}
+		}
+		
+	} // ---------------------------------------------------------------------
+	
+	makeObject(0, "H", 0xFF6666, 0.20, 1 );
+	makeObject(1, "H", 0xFF6666, 0.20, 1 );
+	makeObject(2, "O", 0x6666FF, 0.27, 6 );
+	makeObject(3, "C", 0xFF8866, 0.30, 5 );
+
+	
+}
+
+function update()
+{
+	stats.update();
+
+	// update artoolkit on every frame
+	if ( arToolkitSource.ready !== false )
+		arToolkitContext.update( arToolkitSource.domElement );
+		
+	
+	for (let n = 0; n < objectArray.length; n++)
+	{
+		objectArray[n].update();
+	}
+}
+
+
+function render()
+{
+	renderer.render( scene, camera );
+}
+
+
+function animate()
+{
+	requestAnimationFrame(animate);
+	deltaTime = clock.getDelta();
+	totalTime += deltaTime;
+	update();
+	render();
+}
+
+</script>
+
+</body>
+</html>
