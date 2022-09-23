@@ -4,11 +4,6 @@
 	<title>Hello, world!</title>
 	<!-- include three.js library -->
 	<script src='js/three.js'></script>
-	<script>
-		var vNextURL = "water-effect-AR.html";
-		var vMarker = "hiro";
-		// setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",8000);
-	</script>
 </head>
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
@@ -17,26 +12,14 @@
   Example created by Lee Stemkoski: https://github.com/stemkoski
 -->
 
-<!--  Custom Shader Code  -->
+<!-- ============== Custom Shader Code ==================== -->
 <script id="vertexShader" type="x-shader/x-vertex">
 uniform float time;
 varying vec2 textureUV;
-uniform sampler2D baseTexture;
 void main()
 {
     textureUV = uv;
-	vec2 repeatUV = textureUV * vec2(4.0, 1.0);
-	float sideDisplacement = 0.0;
-	// side displacement only applied near edge of texture
-	if (repeatUV.y < 0.15)
-	{
-		float angle = atan(position.y, position.x);
-		float s1 = sin(8.3 * angle);
-		float s2 = sin(7.1 * angle);
-		sideDisplacement = 0.08 * s1 * s1 * abs(sin(0.65*time)) + 0.09 * s2 * s2 * abs(sin(0.74*time));
-	}
-	vec3 newPosition = position + normal * sideDisplacement;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 }
 </script>
 
@@ -46,28 +29,16 @@ uniform sampler2D baseTexture;
 varying vec2 textureUV;
 void main()
 {
-	vec2 repeatUV = textureUV * vec2(4.0, 1.0);
-	// displacement creates scrolling effect on texture
-	vec2 displaceUV = repeatUV + vec2(0.0, time/20.0);
-	float alpha = 1.0;
-	// transparency only applied near edge of texture
-	if (repeatUV.y < 0.15)
-		alpha = 1.0/0.15 * repeatUV.y;
-	vec4 tintColor = texture2D( baseTexture, displaceUV ) * vec4( 1.0, 1.0, 1.0, alpha );
-	gl_FragColor = tintColor;
+	gl_FragColor = texture2D( baseTexture, textureUV );
 }
 </script>
-<!-- ----------------------------------------------------------- -->
+<!-- ==========================================================- -->
 
 <script>
 
 var scene, camera, renderer, clock, deltaTime, totalTime;
 
-var arToolkitSource, arToolkitContext;
-
-var markerRoot1;
-
-var material1, mesh1;
+var mesh, shaderMaterial;
 
 initialize();
 animate();
@@ -83,6 +54,9 @@ function initialize()
 
 	let ambientLight = new THREE.AmbientLight( 0xcccccc, 1.00 );
 	scene.add( ambientLight );
+
+	// let pointLight = new THREE.PointLight();
+	// camera.add( pointLight );
 
 	renderer = new THREE.WebGLRenderer({
 		antialias : true,
@@ -100,46 +74,45 @@ function initialize()
 	deltaTime = 0;
 	totalTime = 0;
 
-	let geometry1 = new THREE.TorusGeometry(1.25,1.25, 64, 256); // radius, tube radius
+	let geometry = new THREE.BoxGeometry(1,1,1);
 
 	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/water-2.jpg' );
-	// let texture = loader.load( 'images/color-grid.png' );
+	let texture = loader.load( 'images/color-grid.png', render );
 
-	// repeat texture
-	texture.wrapS = THREE.RepeatWrapping;
-	texture.wrapT = THREE.RepeatWrapping;
-	texture.repeat.set(8,2);
+	/*
+	// Basic, unlit material
+	let basicMaterial = new THREE.MeshBasicMaterial({
+		color: 0x0000ff,
+		wireframe: false,
+	});
+	*/
 
-	// Shader-based material
-	material1 = new THREE.ShaderMaterial({
-		uniforms: {
-			time: { value: 1.0 },
-			baseTexture: { value: texture },
-		},
-		vertexShader: document.getElementById( 'vertexShader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
-		transparent: true,
+	// Basic, lit material
+	let material = new THREE.MeshLambertMaterial({
+		map: texture
 	});
 
-	mesh1 = new THREE.Mesh( geometry1, material1 );
-	mesh1.rotation.x = -Math.PI/2;
-	mesh1.scale.z = 0.10;
+	/*
+	// Shader-based material
+	let shaderMaterial = new THREE.ShaderMaterial({
+		uniforms: {
+			time: { value: 1.0 },
+			baseTexture: { value: texture }
+		},
+		vertexShader: document.getElementById( 'vertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+	});
+	*/
 
-	scene.add( mesh1 );
+	mesh = new THREE.Mesh( geometry, material );
 
-	// floor
-	let floorG = new THREE.PlaneGeometry(10,10,1,1);
-	let floorT = loader.load( 'images/sand.jpg' );
-	let floorM = new THREE.MeshBasicMaterial({map: floorT});
-	let floor = new THREE.Mesh(floorG, floorM);
-	floor.rotation.x = -Math.PI/2;
-	scene.add(floor);
+	scene.add( mesh );
 }
 
 function update()
 {
-	material1.uniforms.time.value += deltaTime;
+	mesh.rotation.y += 0.01;
+	// shaderMaterial.uniforms.time.value += deltaTime;
 }
 
 function render()

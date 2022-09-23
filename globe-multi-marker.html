@@ -13,11 +13,16 @@
 	<script src="threex/threex-artoolkitcontext.js"></script>
 	<script src="threex/threex-arbasecontrols.js"></script>
 	<script src="threex/threex-armarkercontrols.js"></script>
+	<script>
+		var vNextURL = "refraction.html";
+		var vMarker = "kanji";
+		// setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",8000);
+	</script>
 </head>
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
 
-<!-- 
+<!--
   Example created by Lee Stemkoski: https://github.com/stemkoski
   Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
 -->
@@ -62,7 +67,7 @@ function initialize()
 	deltaTime = 0;
 	totalTime = 0;
 	keyboard = new Keyboard();
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitSource
 	////////////////////////////////////////////////////////////
@@ -73,26 +78,26 @@ function initialize()
 
 	function onResize()
 	{
-		arToolkitSource.onResize()	
-		arToolkitSource.copySizeTo(renderer.domElement)	
+		arToolkitSource.onResize()
+		arToolkitSource.copySizeTo(renderer.domElement)
 		if ( arToolkitContext.arController !== null )
 		{
-			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
-		}	
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)
+		}
 	}
 
 	arToolkitSource.init(function onReady(){
 		onResize()
 	});
-	
+
 	// handle resize event
 	window.addEventListener('resize', function(){
 		onResize()
 	});
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitContext
-	////////////////////////////////////////////////////////////	
+	////////////////////////////////////////////////////////////
 
 	// create atToolkitContext
 	arToolkitContext = new THREEx.ArToolkitContext({
@@ -100,7 +105,7 @@ function initialize()
 		detectionMode: 'mono',
 		maxDetectionRate: 30,
 	});
-	
+
 	// copy projection matrix to camera when initialization complete
 	arToolkitContext.init( function onCompleted(){
 		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
@@ -111,41 +116,41 @@ function initialize()
 	////////////////////////////////////////////////////////////
 
 	markerNames = ["kanji", "letterA", "letterB"];
-	
+
 	markerArray = [];
-	
+
 	for (let i = 0; i < markerNames.length; i++)
 	{
 		let marker = new THREE.Group();
 		scene.add(marker);
 		markerArray.push(marker);
-		
+
 		let markerControls = new THREEx.ArMarkerControls(arToolkitContext, marker, {
 			type: 'pattern', patternUrl: "data/" + markerNames[i] + ".patt",
 		});
-		
+
 		let markerGroup = new THREE.Group();
 		marker.add(markerGroup);
 	}
-	
+
 	////////////////////////////////////////////////////////////
 	// setup scene
 	////////////////////////////////////////////////////////////
-	
+
 	sceneGroup = new THREE.Group();
-	
+
 	let loader = new THREE.TextureLoader();
-	
-	let geometry1 = new THREE.SphereGeometry(1, 32,32);	
+
+	let geometry1 = new THREE.SphereGeometry(1, 32,32);
 	let texture = loader.load( 'images/earth-sphere.jpg' );
 	let material1 = new THREE.MeshLambertMaterial( { map: texture, opacity: 0.75 } );
 	globe = new THREE.Mesh( geometry1, material1 );
 	globe.position.y = 1;
-	sceneGroup.add(globe); 
-	
+	sceneGroup.add(globe);
+
 	markerArray[0].children[0].add( sceneGroup );
 	currentMarkerName = markerNames[0];
-	
+
 	let pointLight = new THREE.PointLight( 0xffffff, 1, 50 );
 	camera.add( pointLight );
 }
@@ -154,9 +159,9 @@ function initialize()
 function update()
 {
 	keyboard.update();
-	
+
 	globe.rotation.y += 0.01;
-	
+
 	let anyMarkerVisible = false;
 	for (let i = 0; i < markerArray.length; i++)
 	{
@@ -169,12 +174,12 @@ function update()
 				currentMarkerName = markerNames[i];
 				// console.log("Switching to " + currentMarkerName);
 			}
-			
+
 			let p = markerArray[i].children[0].getWorldPosition();
 			let q = markerArray[i].children[0].getWorldQuaternion();
 			let s = markerArray[i].children[0].getWorldScale();
 			let lerpAmount = 0.5;
-			
+
 			scene.add(sceneGroup);
 			sceneGroup.position.lerp(p, lerpAmount);
 			sceneGroup.quaternion.slerp(q, lerpAmount);
@@ -188,9 +193,9 @@ function update()
 	{
 		// console.log("No marker currently visible.");
 	}
-	
+
 	let baseMarker = markerArray[0];
-	
+
 	// update relative positions of markers
 	for (let i = 1; i < markerArray.length; i++)
 	{
@@ -199,15 +204,15 @@ function update()
 		if ( baseMarker.visible && currentMarker.visible )
 		{
 			// console.log("updating marker " + i " -> base offset");
-			
+
 			let relativePosition = currentMarker.worldToLocal( baseMarker.position.clone() );
 			currentGroup.position.copy( relativePosition );
-			
+
 			let relativeRotation = currentMarker.quaternion.clone().inverse().multiply( baseMarker.quaternion.clone() );
 			currentGroup.quaternion.copy( relativeRotation );
 		}
 	}
-	
+
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<title>Hello, world!</title>
+	<title>Hello, AR Cubes!</title>
 	<!-- include three.js library -->
 	<script src='js/three.js'></script>
 	<!-- include jsartookit -->
@@ -13,7 +13,7 @@
 	<script src="threex/threex-arbasecontrols.js"></script>
 	<script src="threex/threex-armarkercontrols.js"></script>
 	<script>
-		var vNextURL = "planetsystem_ar_hiro.html";
+		var vNextURL = "texture.html";
 		var vMarker = "hiro";
 		// setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",8000);
 	</script>
@@ -32,7 +32,7 @@ var scene, camera, renderer, clock, deltaTime, totalTime;
 
 var arToolkitSource, arToolkitContext;
 
-var markerRoot1;
+var markerRoot1, markerRoot2;
 
 var mesh1;
 
@@ -110,41 +110,31 @@ function initialize()
 	// setup markerRoots
 	////////////////////////////////////////////////////////////
 
-	// build markerControls
-	markerRoot1 = new THREE.Group();
-	scene.add(markerRoot1);
-	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, markerRoot1, {
-		type: 'pattern', patternUrl: "data/hiro.patt",
-	})
-
-	let geometry1 = new THREE.SphereGeometry(1, 32,32);
-
 	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/earth-sphere.jpg', render );
-	let material1 = new THREE.MeshLambertMaterial( { map: texture, opacity: 0.5 } );
+	let texture = loader.load( 'images/border.png' );
 
-	mesh1 = new THREE.Mesh( geometry1, material1 );
-	mesh1.position.y = 1;
+	let patternArray = ["letterA", "letterB", "letterC", "letterD", "letterF", "kanji", "hiro"];
+	let colorArray   = [0xff0000, 0xff8800, 0xffff00, 0x00cc00, 0x0000ff, 0xcc00ff, 0xcccccc];
+	for (let i = 0; i < 7; i++)
+	{
+		let markerRoot = new THREE.Group();
+		scene.add(markerRoot);
+		let markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
+			type : 'pattern', patternUrl : "data/" + patternArray[i] + ".patt",
+		});
 
-	markerRoot1.add( mesh1 );
-
-	let pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
-	pointLight.position.set(0.5,3,2);
-	// create a mesh to help visualize the position of the light
-	pointLight.add(
-		new THREE.Mesh(
-			new THREE.SphereBufferGeometry( 0.05, 16,8 ),
-			new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5 })
-		)
-	);
-	markerRoot1.add( pointLight );
+		let mesh = new THREE.Mesh(
+			new THREE.CubeGeometry(1.25,1.25,1.25),
+			new THREE.MeshBasicMaterial({color:colorArray[i], map:texture, transparent:true, opacity:0.5})
+		);
+		mesh.position.y = 1.25/2;
+		markerRoot.add( mesh );
+	}
 }
 
 
 function update()
 {
-	if ( markerRoot1.visible )
-		mesh1.rotation.y += 0.01;
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );

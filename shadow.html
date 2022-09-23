@@ -12,11 +12,16 @@
 	<script src="threex/threex-artoolkitcontext.js"></script>
 	<script src="threex/threex-arbasecontrols.js"></script>
 	<script src="threex/threex-armarkercontrols.js"></script>
+		<script>
+		var vNextURL = "shadow-balls.html";
+		var vMarker = "kanji";
+		// setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",8000);
+	</script>
 </head>
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
 
-<!-- 
+<!--
   Example created by Lee Stemkoski: https://github.com/stemkoski
   Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
 -->
@@ -38,7 +43,7 @@ animate();
 function initialize()
 {
 	scene = new THREE.Scene();
-				
+
 	camera = new THREE.Camera();
 	scene.add(camera);
 
@@ -56,7 +61,7 @@ function initialize()
 	clock = new THREE.Clock();
 	deltaTime = 0;
 	totalTime = 0;
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitSource
 	////////////////////////////////////////////////////////////
@@ -67,33 +72,33 @@ function initialize()
 
 	function onResize()
 	{
-		arToolkitSource.onResize()	
-		arToolkitSource.copySizeTo(renderer.domElement)	
+		arToolkitSource.onResize()
+		arToolkitSource.copySizeTo(renderer.domElement)
 		if ( arToolkitContext.arController !== null )
 		{
-			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
-		}	
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)
+		}
 	}
 
 	arToolkitSource.init(function onReady(){
 		onResize()
 	});
-	
+
 	// handle resize event
 	window.addEventListener('resize', function(){
 		onResize()
 	});
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitContext
-	////////////////////////////////////////////////////////////	
+	////////////////////////////////////////////////////////////
 
 	// create atToolkitContext
 	arToolkitContext = new THREEx.ArToolkitContext({
 		cameraParametersUrl: 'data/camera_para.dat',
 		detectionMode: 'mono'
 	});
-	
+
 	// copy projection matrix to camera when initialization complete
 	arToolkitContext.init( function onCompleted(){
 		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
@@ -113,30 +118,30 @@ function initialize()
 	////////////////////////////////////////////////////////////
 	// setup scene
 	////////////////////////////////////////////////////////////
-	
+
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-	
+
 	let loader = new THREE.TextureLoader();
-		
+
 	let sceneGroup = new THREE.Group();
 	markerRoot1.add(sceneGroup);
-	
+
 	let texture = loader.load("images/color-grid.png");
 	// repeat texture
 	texture.wrapS = THREE.RepeatWrapping;
 	texture.wrapT = THREE.RepeatWrapping;
 	texture.repeat.set(8,1);
-	
-	shadowMesh = new THREE.Mesh( 
-		new THREE.TorusKnotGeometry(0.5, 0.2, 128, 16), // new THREE.SphereBufferGeometry(1, 32, 32), 
+
+	shadowMesh = new THREE.Mesh(
+		new THREE.TorusKnotGeometry(0.5, 0.2, 128, 16), // new THREE.SphereBufferGeometry(1, 32, 32),
 		new THREE.MeshLambertMaterial({ map: texture })
 	);
 	shadowMesh.position.y = 1;
 	shadowMesh.castShadow = true;
 	shadowMesh.receiveShadow = true;
 	sceneGroup.add( shadowMesh );
-	
+
 	let floorGeometry = new THREE.PlaneGeometry( 20,20 );
 	let floorMaterial = new THREE.ShadowMaterial();
 	floorMaterial.opacity = 0.3;
@@ -145,12 +150,12 @@ function initialize()
 	floorMesh.receiveShadow = true;
 	sceneGroup.add( floorMesh );
 
-	
+
 	let light = new THREE.PointLight( 0xffffff, 1, 100 );
 	light.position.set( 0,4,0 ); // default; light shining from top
 	light.castShadow = true;
 	sceneGroup.add( light );
-	
+
 	let lightSphere = new THREE.Mesh(
 		new THREE.SphereGeometry(0.1),
 		new THREE.MeshBasicMaterial({
@@ -161,7 +166,7 @@ function initialize()
 	);
 	lightSphere.position.copy( light.position );
 	sceneGroup.add( lightSphere );
-	
+
 	let ambientLight = new THREE.AmbientLight( 0x666666 );
 	sceneGroup.add( ambientLight );
 	// let helper = new THREE.CameraHelper( light.shadow.camera );
@@ -173,7 +178,7 @@ function update()
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
-		
+
 	shadowMesh.rotation.y -= 0.01;
 }
 

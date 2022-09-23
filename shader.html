@@ -16,35 +16,35 @@
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
 
-<!-- 
+<!--
   Example created by Lee Stemkoski: https://github.com/stemkoski
   Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
 -->
 
-<!-- ---------------- Custom Shader Code ------------------------ -->
+<!--  Custom Shader Code  -->
 <script id="vertexShader" type="x-shader/x-vertex">
 uniform float time;
 varying vec2 textureUV;
-void main() 
-{ 
+void main()
+{
     textureUV = uv;
 	vec3 newPosition = position + vec3( 0, 0, abs(sin(time)) );
     gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
 }
 </script>
 
-<script id="fragmentShader" type="x-shader/x-vertex"> 
+<script id="fragmentShader" type="x-shader/x-vertex">
 uniform float time;
 uniform sampler2D baseTexture;
 varying vec2 textureUV;
-void main() 
+void main()
 {
 	float amt = abs( sin(time) );
 	vec4 tintColor = texture2D( baseTexture, textureUV ) * vec4( amt, amt, 1, 1 );
 	gl_FragColor = tintColor;
-}  
+}
 </script>
-<!-- ----------------------------------------------------------- -->
+<!-- ======================================- -->
 
 <script>
 
@@ -65,7 +65,7 @@ function initialize()
 
 	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
 	scene.add( ambientLight );
-				
+
 	camera = new THREE.Camera();
 	scene.add(camera);
 
@@ -83,7 +83,7 @@ function initialize()
 	clock = new THREE.Clock();
 	deltaTime = 0;
 	totalTime = 0;
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitSource
 	////////////////////////////////////////////////////////////
@@ -94,33 +94,33 @@ function initialize()
 
 	function onResize()
 	{
-		arToolkitSource.onResize()	
-		arToolkitSource.copySizeTo(renderer.domElement)	
+		arToolkitSource.onResize()
+		arToolkitSource.copySizeTo(renderer.domElement)
 		if ( arToolkitContext.arController !== null )
 		{
-			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
-		}	
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)
+		}
 	}
 
 	arToolkitSource.init(function onReady(){
 		onResize()
 	});
-	
+
 	// handle resize event
 	window.addEventListener('resize', function(){
 		onResize()
 	});
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitContext
-	////////////////////////////////////////////////////////////	
+	////////////////////////////////////////////////////////////
 
 	// create atToolkitContext
 	arToolkitContext = new THREEx.ArToolkitContext({
 		cameraParametersUrl: 'data/camera_para.dat',
 		detectionMode: 'mono'
 	});
-	
+
 	// copy projection matrix to camera when initialization complete
 	arToolkitContext.init( function onCompleted(){
 		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
@@ -138,10 +138,10 @@ function initialize()
 	})
 
 	let geometry1 = new THREE.PlaneBufferGeometry(1,1, 4,4);
-	
+
 	let loader = new THREE.TextureLoader();
 	let texture = loader.load( 'images/color-grid.png', render );
-	
+
 	material1 = new THREE.ShaderMaterial({
 		uniforms: {
 			time: { value: 1.0 },
@@ -150,10 +150,10 @@ function initialize()
 		vertexShader: document.getElementById( 'vertexShader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentShader' ).textContent
 	});
-	
+
 	mesh1 = new THREE.Mesh( geometry1, material1 );
 	mesh1.rotation.x = -Math.PI/2;
-	
+
 	markerRoot1.add( mesh1 );
 }
 
@@ -162,7 +162,7 @@ function update()
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
-		
+
 	material1.uniforms.time.value += deltaTime;
 }
 
