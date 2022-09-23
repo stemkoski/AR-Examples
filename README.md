@@ -9,3 +9,4 @@ The examples from [Lee Stemkoski](https://github.com/stemkoski/AR-Examples) was 
 Check out the online demos with:
 ## [Online-Demo](https://niebert.github.io/AR-Examples)
 * [Download ZIP-file](https://github.com/niebert/AR-Examples/archive/refs/heads/master.zip) of this repository
+* see also [Wikiversity learning resource about 3D-modelling](https://en.wikiversity.org/wiki/3D_Modelling/Examples/AR_with_Markers)
