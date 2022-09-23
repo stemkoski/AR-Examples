@@ -7,4 +7,4 @@ The examples from [Lee Stemkoski](https://github.com/stemkoski/AR-Examples) was 
 * also 360-degree (equirectangular) images are used to and you could use e.g. the [hiro-marker](markers/Marker_Printout_AR_demo.pdf) to look around
 
 Check out the online demos with:
-* <h3>[Online-Demo](https://niebert.github.io/AR-Examples)</h3>
+* **[Online-Demo](https://niebert.github.io/AR-Examples)**
