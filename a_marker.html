@@ -6,7 +6,7 @@
     <script src="js/linkparam.js"></script>
   </head>
   <body style="background-color: #CACACA">
-	<h3>Verwenden Sie den folgenden Marker</h3>
+	<h3>Use the following Marker for the AR-Example</h3>
   	<div id="markerimage">
   	</div>
 
@@ -24,7 +24,7 @@
   			vNextURL= vLinkParam.getValue("nexturl");
   			//alert(vPar);
   			document.getElementById("nexturl").value = vNextURL;
-			// setTimeout("window.location.href='"+vNextURL+"'",5000)
+			setTimeout("window.location.href='"+vNextURL+"'",5000)
 
   		} else {
   			alert("Receiver needs a LinkParameter 'nexturl'")
