@@ -149,6 +149,9 @@ function initialize()
 	let light = new THREE.PointLight( 0xffffff, 1, 100 );
 	light.position.set( 0,4,0 ); // default; light shining from top
 	light.castShadow = true;
+	light.shadow.mapSize = new THREE.Vector2(2048, 2048); // default 512
+	light.shadow.radius = 5
+	light.shadow.blurSamples = 25
 	sceneGroup.add( light );
 	
 	let lightSphere = new THREE.Mesh(
