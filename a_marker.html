@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Receiver of Params</title>
+    <script src="js/linkparam.js"></script>
+  </head>
+  <body style="background-color: #CACACA">
+	<h3>Use the following Marker for the AR-Example</h3>
+  	<div id="markerimage">
+  	</div>
+
+  	<div id="paramout">
+  	</div>
+    <textarea id="nexturl" row="5" cols="95" style="display:none">undefined nexturl</textarea>
+    <textarea id="marker" row="5" cols="95"  style="display:none">undefined marker</textarea>
+    <script>
+		var vNextURL = "";
+  		var vMarker = "";
+  		var vLinkParam = new LinkParam();
+  		vLinkParam.init(document);
+  		document.getElementById("paramout").innerHTML = vLinkParam.getTableHTML();
+  		if (vLinkParam.exists("nexturl")) {
+  			vNextURL= vLinkParam.getValue("nexturl");
+  			//alert(vPar);
+  			document.getElementById("nexturl").value = vNextURL;
+			setTimeout("window.location.href='"+vNextURL+"'",5000)
+
+  		} else {
+  			alert("Receiver needs a LinkParameter 'nexturl'")
+  		}
+  		if (vLinkParam.exists("marker")) {
+  			var vMarker = vLinkParam.getValue("marker");
+  			//alert(vPar);
+  			document.getElementById("marker").value = vMarker;
+  			var img = document.createElement("img");
+			img.width=450;
+			//img.src = "markers/hiro.png";
+			img.src = "markers/"+vMarker+".png";
+			var src = document.getElementById("markerimage");
+			src.appendChild(img);
+  		} else {
+  			alert("Receiver needs a LinkParameter 'marker'")
+  		}
+  	</script>
+  </body>
+</html>

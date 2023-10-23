@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<title>Hello, world!</title>
+	<title>Parabolic Path Hiro Kanji Marker</title>
 	<!-- include three.js library -->
 	<script src='js/three.js'></script>
 	<!-- include jsartookit -->
@@ -12,11 +12,6 @@
 	<script src="threex/threex-artoolkitcontext.js"></script>
 	<script src="threex/threex-arbasecontrols.js"></script>
 	<script src="threex/threex-armarkercontrols.js"></script>
-	<script>
-		var vNextURL = "planetsystem_ar_hiro.html";
-		var vMarker = "hiro";
-		// setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",8000);
-	</script>
 </head>
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
@@ -26,6 +21,7 @@
   Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
 -->
 
+
 <script>
 
 var scene, camera, renderer, clock, deltaTime, totalTime;
@@ -34,7 +30,7 @@ var arToolkitSource, arToolkitContext;
 
 var markerRoot1;
 
-var mesh1;
+var material1, mesh1;
 
 initialize();
 animate();
@@ -42,9 +38,6 @@ animate();
 function initialize()
 {
 	scene = new THREE.Scene();
-
-	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
-	scene.add( ambientLight );
 
 	camera = new THREE.Camera();
 	scene.add(camera);
@@ -111,51 +104,116 @@ function initialize()
 	////////////////////////////////////////////////////////////
 
 	// build markerControls
-	markerRoot1 = new THREE.Group();
-	scene.add(markerRoot1);
-	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, markerRoot1, {
+	markerRootA = new THREE.Group();
+	scene.add(markerRootA);
+	let markerControls1 = new THREEx.ArMarkerControls(arToolkitContext, markerRootA, {
 		type: 'pattern', patternUrl: "data/hiro.patt",
-	})
+	});
 
-	let geometry1 = new THREE.SphereGeometry(1, 32,32);
+	markerRootB = new THREE.Group();
+	scene.add(markerRootB);
+	let markerControls2 = new THREEx.ArMarkerControls(arToolkitContext, markerRootB, {
+		type: 'pattern', patternUrl: "data/kanji.patt",
+	});
+
+	////////////////////////////////////////////////////////////
+	// setup scene
+	////////////////////////////////////////////////////////////
+
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 	let loader = new THREE.TextureLoader();
-	let texture = loader.load( 'images/earth-sphere.jpg', render );
-	let material1 = new THREE.MeshLambertMaterial( { map: texture, opacity: 0.5 } );
 
-	mesh1 = new THREE.Mesh( geometry1, material1 );
-	mesh1.position.y = 1;
+	sceneGroup = new THREE.Group();
+	markerRootA.add(sceneGroup);
 
-	markerRoot1.add( mesh1 );
+	let floorGeometry = new THREE.PlaneGeometry( 20,20 );
+	let floorMaterial = new THREE.ShadowMaterial();
+	floorMaterial.opacity = 0.3;
+	let floorMesh = new THREE.Mesh( floorGeometry, floorMaterial );
+	floorMesh.rotation.x = -Math.PI/2;
+	floorMesh.receiveShadow = true;
+	sceneGroup.add( floorMesh );
 
-	let pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
-	pointLight.position.set(0.5,3,2);
-	// create a mesh to help visualize the position of the light
-	pointLight.add(
-		new THREE.Mesh(
-			new THREE.SphereBufferGeometry( 0.05, 16,8 ),
-			new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5 })
-		)
+	ballMesh = new THREE.Mesh(
+		new THREE.SphereGeometry(0.25, 32, 32),
+		new THREE.MeshLambertMaterial({
+			map: loader.load("images/basketball-gray.png"),
+			color: 0xff8800
+		})
 	);
-	markerRoot1.add( pointLight );
-}
+	ballMesh.castShadow = true;
+	scene.add( ballMesh );
 
+	let light = new THREE.PointLight( 0xffffff, 1, 100 );
+	light.position.set( 0,4,0 ); // default; light shining from top
+	light.castShadow = true;
+	sceneGroup.add( light );
+
+	let lightSphere = new THREE.Mesh(
+		new THREE.SphereGeometry(0.1),
+		new THREE.MeshBasicMaterial({
+			color: 0xffffff,
+			transparent: true,
+			opacity: 0.8
+		})
+	);
+	lightSphere.position.copy( light.position );
+	sceneGroup.add( lightSphere );
+
+	let ambientLight = new THREE.AmbientLight( 0x666666 );
+	sceneGroup.add( ambientLight );
+	// let helper = new THREE.CameraHelper( light.shadow.camera );
+	// sceneGroup.add( helper );
+
+	// default normal of a plane is 0,0,1. Apply mesh rotation to it.
+	let clipPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+		new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,0) );
+	renderer.clippingPlanes = [clipPlane];
+}
 
 function update()
 {
-	if ( markerRoot1.visible )
-		mesh1.rotation.y += 0.01;
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
+
+	if ( markerRootA.visible && markerRootB.visible )
+	{
+		// align clipping plane to scene.
+		renderer.clippingPlanes[0].setFromNormalAndCoplanarPoint(
+			new THREE.Vector3(0,1,0).applyQuaternion(sceneGroup.getWorldQuaternion()),
+			sceneGroup.getWorldPosition()
+		);
+
+		let p = parabolicPath( markerRootA.getWorldPosition(), markerRootB.getWorldPosition(), (totalTime/1) % 4 - 1 );
+		ballMesh.position.copy( p );
+		ballMesh.rotation.z += 0.1
+	}
 }
 
+// create a function p() that passes through the points (0,p0), (1,p1), (2,p2)
+//  and evaluate that function at time t.
+function parabolaEvaluate(p0, p1, p2, t)
+{
+	return ( 0.5*(p0 - 2*p1 + p2) )*t*t + ( -0.5*(3*p0 - 4*p1 + p2) )*t + ( p0 );
+}
+
+function parabolicPath( pointStart, pointEnd, time )
+{
+	let pointMiddle = new THREE.Vector3().addVectors( pointStart, pointEnd ).multiplyScalar(0.5).add( new THREE.Vector3(0,2,0) );
+	return new THREE.Vector3(
+		parabolaEvaluate( pointStart.x, pointMiddle.x, pointEnd.x, time ),
+		parabolaEvaluate( pointStart.y, pointMiddle.y, pointEnd.y, time ),
+		parabolaEvaluate( pointStart.z, pointMiddle.z, pointEnd.z, time )
+	);
+}
 
 function render()
 {
 	renderer.render( scene, camera );
 }
-
 
 function animate()
 {

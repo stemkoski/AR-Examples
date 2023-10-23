@@ -1,144 +1,98 @@
 <html>
 <head>
-<title>AR - Beispiele</title>
+<title>Three.js and AR.js - examples</title>
 <link rel=stylesheet href="css/index.css"/>
-<script>
-	//setTimeout("window.location.href='a_hiro.html?nexturl=basic-scene-hiro.html&marker=hiro'",5000)
-</script>
 </head>
 <body>
 
-<div class="bigTitle">Augemented Reality</div>
+<div class="bigTitle">Three.js and AR.js Examples</div>
 <hr>
-Beispiel zum Testen von <a class="toc" href="https://github.com/jeromeetienne/AR.js">AR.js</a>. Weitere Beispiele zu <a class="toc" href="https://threejs.org/">three.js</a> findet man auf der <a class="toc" href="https://github.com/stemkoski/AR-Examples" target="_blank">Homepage von Lee Stemkoski</a>.
+The goal of this collection is to provide a set of basic and instructive examples that introduce the various features in the Javascript-based Augmented Reality (AR) library, 
+<a class="toc" href="https://github.com/jeromeetienne/AR.js">AR.js</a>. Advanced <a class="toc" href="https://threejs.org/">three.js</a> examples are also included.
 <br/><br/>
-Quelle der Beispiele sind auf GitHub zu finden
-<ul>
-	<li>
-	<a class="toc" href="https://github.com/stemkoski/AR-Examples" target="_blank">GitHub AR-Examples Lee Stemkoski</a>.
-	</li>
-	<li>
-<a class="toc" href="https://github.com/niebert/AR-Examples" target="_blank">GitHub AR-Examples (Fork) Bert Niehaus</a>.
-</li>
-</ul>
+Viewing the AR examples will require a device with a camera and one or both of the <a class="toc" href="markers/hiro.png">Hiro</a> and <a class="toc" href="markers/kanji.png">Kanji</a> marker patterns (either printed or displayed on a second device).
+<br/><br/>
+Source code hosted at <a class="toc" href="https://github.com/stemkoski/AR-Examples">GitHub</a>.
 
 <hr/>
 
 <div class="fancy">
-<a href="hello-cube.html" target="_blank">
+<a href="hello-cube.html">
 <img src="images/demo/hello-cube.png" class="superImage" />
 <br/>Basic Cube</a>
 <p class ="superText">A basic scene that superimposes a cube on a Hiro marker.
-<br><img src="markers/hiro.png" width="80" />
 </p>
-
 </div>
 
 <div class="fancy">
-<a href="many-cubes-mult-marker.html" target="_blank">
+<a href="custom-patterns.html">
 <img src="images/demo/custom-patterns.png" class="superImage" />
 <br/>Many Cubes</a>
 <p class ="superText">A scene that superimposes different colored cubes on a Hiro, Kanji, and letter markers.
-	<a href="markers/Marker_Printout_AR_demo.pdf" target="_blank">
-		Marker-PDF-Printout
-	</a>
-<br><img src="markers/hiro.png" width="80" />
-<img src="markers/kanji.png" width="80" />
-<img src="markers/letterA.png" width="80" />
-<img src="markers/letterB.png" width="80" />
-<img src="markers/letterC.png" width="80" />
-<img src="markers/letterD.png" width="80" />
-<img src="markers/letterF.png" width="80" />
 </p>
 </div>
-<!--
+
 <div class="fancy">
 <a href="smoothed-controls.html">
 <img src="images/demo/hello-cube.png" class="superImage" />
 <br/>Smoothed Controls</a>
-<p class ="superText">The basic scene, recreated usingScee "smoothed controls", which interpolates the marker location from frame to frame at an adjustable rate.
+<p class ="superText">The basic scene, recreated using "smoothed controls", which interpolates the marker location from frame to frame at an adjustable rate.
 </p>
 </div>
--->
+
 <div class="fancy">
-<a href="texture.html" target="_blank">
+<a href="texture.html">
 <img src="images/demo/texture.png" class="superImage" />
 <br/>Image Texture</a>
 <p class ="superText">An image is positioned to cover a Hiro marker.
-<br><img src="markers/hiro.png" width="80" />
 </p>
 </div>
 
 <div class="fancy">
-<a href="rhein1_rodenkirchen.html" target="_blank">
-<img src="images/demo/rhein1_rodenkirchen.png" class="superImage" />
-<br/>360 Degree Scene on a Marker</a>
-<p class ="superText">Use a 360 degree image as a aframe/AR.js sky that is positioned around the Hiro marker. THe hiro marker define the perspective and view in the 360 degree scene. Keep the marker in the view of the camera.
-<br><img src="markers/hiro.png" width="80" />
-</p>
-</div>
-
-
-<div class="fancy">
-<a href="globe.html" target="_blank">
+<a href="globe.html">
 <img src="images/demo/globe.png" class="superImage" />
 <br/>Rotating Globe</a>
 <p class ="superText">A rotating globe (illuminated by a point light) is positioned above a Hiro marker.
-<br><img src="markers/hiro.png" width="80" />
 </p>
 </div>
 
 <div class="fancy">
-<a href="planetsystem_ar_hiro.html" target="_blank">
-<img src="images/demo/planetsystem_ar_hiro.png" class="superImage" />
-<br/>Planet System - Sun, Earth, Moon</a>
-<p class ="superText">A rotating sun, moon and earth is positioned two dependent rotations above a Hiro marker.
-<br><img src="markers/hiro.png" width="80" />
-</p>
-</div>
-
-<div class="fancy">
-<a href="video.html" target="_blank">
+<a href="video.html">
 <img src="images/demo/video.png" class="superImage" />
 <br/>Video Texture</a>
 <p class ="superText">A flat plane, with a video for a texture, is positioned to cover a Hiro marker.
-<br><img src="markers/hiro.png" width="80" />
 </p>
 </div>
 
 <div class="fancy">
-<a href="shader.html" target="_blank">
+<a href="shader.html">
 <img src="images/demo/shader.png" class="superImage" />
 <br/>Shader</a>
 <p class ="superText">A flat plane moves up and down above a Hiro marker; position and tint color are controlled by vertex and fragment shaders.
-<br><img src="markers/hiro.png" width="80" />
 </p>
 </div>
 
 <div class="fancy">
-<a href="model.html" target="_blank">
+<a href="model.html">
 <img src="images/demo/model.png" class="superImage" />
 <br/>Loading 3D Models</a>
-<p class ="superText">A 3D model (OBJ and MTL files) are loaded and displayed above a Hiro marker. OBJ defines the 3D model and the MTL creates the texture and the layer
-<br><img src="markers/hiro.png" width="80" />
+<p class ="superText">A 3D model (obj and mtl files) are loaded and displayed above a Hiro marker.
 </p>
 </div>
 
 <div class="fancy">
-<a href="hole-box.html" target="_blank">
+<a href="hole-box.html">
 <img src="images/demo/hole-box.png" class="superImage" />
 <br/>Hole in the Floor (Box)</a>
 <p class ="superText">A "hole in the floor" effect. Uses a box geometry to mask the hidden parts of the hole.
-<br><img src="markers/hiro.png" width="80" />
 </p>
 </div>
 
 <div class="fancy">
-<a href="hole-plane.html" >
+<a href="hole-plane.html">
 <img src="images/demo/hole-box.png" class="superImage" />
 <br/>Hole in the Floor (Plane)</a>
-<p class ="superText">Another "hole in the floor" effect, using a plane geometry to mask the hidden parts of the hole. A rear side of a plane is translucent. This feature is used in the
-<br><img src="markers/hiro.png" width="80" />
+<p class ="superText">Another "hole in the floor" effect, using a plane geometry to mask the hidden parts of the hole.
 </p>
 </div>
 
@@ -147,38 +101,33 @@ Quelle der Beispiele sind auf GitHub zu finden
 <img src="images/demo/hole-ring.png" class="superImage" />
 <br/>Hole in the Floor (Ring)</a>
 <p class ="superText">A cylindrical "hole in the floor" effect, using a ring geometry to mask the hidden parts of the hole.
-<br><img src="markers/hiro.png" width="80" />
 </p>
 </div>
-<!--
+
 <div class="fancy">
 <a href="basic-scene.html" target="_blank">
 <img src="images/demo/basic-scene.png" class="superImage" />
 <br/>Basic Scene</a>
 <p class ="superText"> A basic scene created with only Three.js (no AR), useful for prototyping ideas before adding in AR components. </p>
 </div>
--->
+
 <div class="fancy">
 <a href="water-effect.html" target="_blank">
 <img src="images/demo/water-effect.png" class="superImage" />
 <br/>Water Effect (no AR)</a>
-<p class ="superText"> An animated effect (using shaders) that looks like water flowing
-out from a central point and being absorbed into the floor. (No AR.)
-<br><img src="images/demo/water-effect.png" width="80"  height="80"/>
-</p>
+<p class ="superText"> An animated effect (using shaders) that looks like water flowing 
+out from a central point and being absorbed into the floor. (No AR.)</p>
 </div>
 
 <div class="fancy">
 <a href="water-effect-AR.html" target="_blank">
 <img src="images/demo/water-effect-AR.png" class="superImage" />
 <br/>Water Effect (AR version)</a>
-<p class ="superText"> An animated effect (using shaders) that looks like water flowing
-out from a cylindrical hole (displayed above a Hiro marker), and being absorbed into the floor.
-<br/>Video preview <a class="toc" href="https://www.youtube.com/watch?v=3DfcD5APnEU">here</a>.
-<br><img src="markers/hiro.png" width="80" /></p>
+<p class ="superText"> An animated effect (using shaders) that looks like water flowing 
+out from a cylindrical hole (displayed above a Hiro marker), and being absorbed into the floor. 
+<br/>Video preview <a class="toc" href="https://www.youtube.com/watch?v=3DfcD5APnEU">here</a>. </p>
 </div>
 
-<!--
 <div class="fancy">
 <a href="keyboard-mesh-move.html" target="_blank">
 <img src="images/demo/mesh-movement.png" class="superImage" />
@@ -197,7 +146,7 @@ out from a cylindrical hole (displayed above a Hiro marker), and being absorbed 
 <a href="portal-half-keyboard-test.html" target="_blank">
 <img src="images/demo/portal-half-keyboard-test.png" class="superImage" />
 <br/>Portal Test</a>
-<p class ="superText"> Creating a "portal to another world" effect. Camera moves using same controls as Object Movement example. Only visible from one side.
+<p class ="superText"> Creating a "portal to another world" effect. Camera moves using same controls as Object Movement example. Only visible from one side. 
 <br/>Not very robust -- see the following portal examples instead.</p>
 </div>
 
@@ -220,9 +169,9 @@ onto a plane in the scene. Camera moves using same controls as Object Movement e
 <a href="portal-view.html" target="_blank">
 <img src="images/demo/portal-view.png" class="superImage" />
 <br/>Portal View</a>
-<p class ="superText"> A "portal to another world" effect. Portal visible through both sides.
-<br/>Camera moves using same controls as Object Movement example; also, press 1, 2, or 3 to see the view from different cameras.
-<br/>Uses stencil buffer and clipping planes for accurate rendering.
+<p class ="superText"> A "portal to another world" effect. Portal visible through both sides. 
+<br/>Camera moves using same controls as Object Movement example; also, press 1, 2, or 3 to see the view from different cameras. 
+<br/>Uses stencil buffer and clipping planes for accurate rendering. 
  </p>
 </div>
 
@@ -233,18 +182,13 @@ onto a plane in the scene. Camera moves using same controls as Object Movement e
 <p class ="superText"> An augmented reality version of the "portal to another world" effect. Portal renders above a Kanji marker.
 <br/>Video preview <a class="toc" href="https://www.youtube.com/watch?v=-gZ3Kv9juYg">here</a>. </p>
 </div>
--->
 
 <div class="fancy">
 <a href="magic-cube.html" target="_blank">
 <img src="images/demo/magic-cube.png" class="superImage" />
 <br/>Magic Cube Effect</a>
-<p class ="superText"> Creates a "magic cube effect" that overlays a cube covered with six AR markers
-<a class="toc" href="markers/cube.png">in this pattern</a>.
-<br/>Video preview <a class="toc" href="https://www.youtube.com/watch?v=ZI6oJJFgACM">here</a>.
-<br><img src="markers/cube.png" width="80" />
-</p>
-</p>
+<p class ="superText"> Creates a "magic cube effect" that overlays a cube covered with six AR markers <a class="toc" href="markers/cube.png">in this pattern</a>. 
+<br/>Video preview <a class="toc" href="https://www.youtube.com/watch?v=ZI6oJJFgACM">here</a>. </p>
 </div>
 
 <div class="fancy">
@@ -252,10 +196,6 @@ onto a plane in the scene. Camera moves using same controls as Object Movement e
 <img src="images/demo/globe-multi-marker.png" class="superImage" />
 <br/>Globe with Multiple Markers</a>
 <p class ="superText"> Similar to the Rotating Globe example: places a globe over a Kanji marker. If Kanji marker is blocked, uses other markers (<a class="toc" href="markers/letterA.png">letter A</a> and <a class="toc" href="markers/letterB.png">letter B</a>) to position the globe. </p>
-<br>
-<img src="markers/kanji.png" width="80" />
-<img src="markers/letterA.png" width="80" />
-<img src="markers/letterB.png" width="80" />
 </div>
 
 <div class="fancy">
@@ -263,41 +203,22 @@ onto a plane in the scene. Camera moves using same controls as Object Movement e
 <img src="images/demo/refraction.png" class="superImage" />
 <br/>Refraction</a>
 <p class ="superText"> Creates a rotating torus knot above a Kanji marker. The surface of the knot refracts the scene behind it.
-<br/>Video preview <a class="toc" href="https://www.youtube.com/watch?v=8-YnBk1LL-8">here</a>.
-<br>
-<img src="markers/kanji.png" width="80" /></p>
+<br/>Video preview <a class="toc" href="https://www.youtube.com/watch?v=8-YnBk1LL-8">here</a>. 
+</p>
 </div>
 
 <div class="fancy">
 <a href="shadow.html" target="_blank">
 <img src="images/demo/shadow.png" class="superImage" />
 <br/>Shadow</a>
-<p class ="superText"> Creates a rotating torus knot above a Kanji marker. The knot casts a shadow onto the plane containing the marker.
-<br>
-<img src="markers/kanji.png" width="80" />
-</p>
+<p class ="superText"> Creates a rotating torus knot above a Kanji marker. The knot casts a shadow onto the plane containing the marker. </p>
 </div>
 
 <div class="fancy">
 <a href="shadow-balls.html" target="_blank">
 <img src="images/demo/shadow-balls.png" class="superImage" />
 <br/>Shadow Balls</a>
-<p class ="superText"> Creates four colored bouncing basketballs around a Kanji marker. The balls cast shadows onto the plane containing the Kanji marker.
-<br>
-<img src="markers/kanji.png" width="80" />
-</p>
-</div>
-
-<div class="fancy">
-<a href="parabolic-path-hiro-kanji.html" target="_blank">
-<img src="images/demo/parabolic-path-hiro-kanji.png" class="superImage" />
-<br/>Parabolic Path</a>
-<p class ="superText"> A basketball launches from a <a class="toc" href="markers/hiro.png">Hiro</a> marker and falls towards a <a class="toc" href="markers/kanji.png">Kanji</a> marker, following a parabolic path. The ball casts shadows, and a clipping plane (see above example) is used
-to make the ball disappear into the marker. Place hiro-marker and the kanji-marker in front of the webcam.
-<br>
-<img src="markers/hiro.png" width="80" />
-<img src="markers/kanji.png" width="80" />
-</p>
+<p class ="superText"> Creates four colored bouncing basketballs around a Kanji marker. The balls cast shadows onto the plane containing the marker. </p>
 </div>
 
 <div class="fancy">
@@ -305,11 +226,7 @@ to make the ball disappear into the marker. Place hiro-marker and the kanji-mark
 <img src="images/demo/parabolic-path.png" class="superImage" />
 <br/>Parabolic Path</a>
 <p class ="superText"> A basketball launches from a <a class="toc" href="markers/letterA.png">Letter-A</a> marker and falls towards a <a class="toc" href="markers/letterB.png">Letter-B</a> marker, following a parabolic path. The ball casts shadows, and a clipping plane (see above example) is used
-to make the ball disappear into the marker.
-<br>
-<img src="markers/letterA.png" width="80" />
-<img src="markers/letterB.png" width="80" />
-</p>
+to make the ball disappear into the marker. </p>
 </div>
 
 <!--
@@ -329,16 +246,6 @@ to make the ball disappear into the marker.
 <p class ="superText"> ... </p>
 </div>
 -->
-<hr>
-<center>
-	<a href="https://www.github.com/niebert/AR-Examples">GitHub-Repository - Fork</a>
-</center>
-<hr>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
+
 </body>
 </html>

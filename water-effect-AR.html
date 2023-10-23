@@ -12,23 +12,27 @@
 	<script src="threex/threex-artoolkitcontext.js"></script>
 	<script src="threex/threex-arbasecontrols.js"></script>
 	<script src="threex/threex-armarkercontrols.js"></script>
-
+   <script>
+		var vNextURL = "magic-cube.html";
+		var vMarker = "cube";
+		// setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",8000);
+	</script>
 </head>
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
 
-<!-- 
+<!--
   Example created by Lee Stemkoski: https://github.com/stemkoski
   Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
 -->
 
-<!-- ---------------- Custom Shader Code ------------------------ -->
+<!-- Custom Shader Code  -->
 <script id="vertexShader" type="x-shader/x-vertex">
 uniform float time;
 varying vec2 textureUV;
 uniform sampler2D baseTexture;
-void main() 
-{ 
+void main()
+{
     textureUV = uv;
 	vec2 repeatUV = textureUV * vec2(4.0, 1.0);
 	float sideDisplacement = 0.0;
@@ -45,11 +49,11 @@ void main()
 }
 </script>
 
-<script id="fragmentShader" type="x-shader/x-vertex"> 
+<script id="fragmentShader" type="x-shader/x-vertex">
 uniform float time;
 uniform sampler2D baseTexture;
 varying vec2 textureUV;
-void main() 
+void main()
 {
 	vec2 repeatUV = textureUV * vec2(4.0, 1.0);
 	// displacement creates scrolling effect on texture
@@ -60,7 +64,7 @@ void main()
 		alpha = 1.0/0.315 * repeatUV.y;
 	vec4 tintColor = texture2D( baseTexture, displaceUV ) * vec4( 1.0, 1.0, 1.0, alpha );
 	gl_FragColor = tintColor;
-}  
+}
 </script>
 <!-- ----------------------------------------------------------- -->
 
@@ -80,13 +84,13 @@ animate();
 function initialize()
 {
 	scene = new THREE.Scene();
-				
+
 	camera = new THREE.Camera();
 	scene.add( camera );
 
 	let ambientLight = new THREE.AmbientLight( 0xcccccc, 1.00 );
 	scene.add( ambientLight );
-		
+
 	renderer = new THREE.WebGLRenderer({
 		antialias : true,
 		alpha: true
@@ -101,7 +105,7 @@ function initialize()
 	clock = new THREE.Clock();
 	deltaTime = 0;
 	totalTime = 0;
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitSource
 	////////////////////////////////////////////////////////////
@@ -112,33 +116,33 @@ function initialize()
 
 	function onResize()
 	{
-		arToolkitSource.onResize()	
-		arToolkitSource.copySizeTo(renderer.domElement)	
+		arToolkitSource.onResize()
+		arToolkitSource.copySizeTo(renderer.domElement)
 		if ( arToolkitContext.arController !== null )
 		{
-			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
-		}	
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)
+		}
 	}
 
 	arToolkitSource.init(function onReady(){
 		onResize()
 	});
-	
+
 	// handle resize event
 	window.addEventListener('resize', function(){
 		onResize()
 	});
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitContext
-	////////////////////////////////////////////////////////////	
+	////////////////////////////////////////////////////////////
 
 	// create atToolkitContext
 	arToolkitContext = new THREEx.ArToolkitContext({
 		cameraParametersUrl: 'data/camera_para.dat',
 		detectionMode: 'mono'
 	});
-	
+
 	// copy projection matrix to camera when initialization complete
 	arToolkitContext.init( function onCompleted(){
 		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
@@ -156,18 +160,18 @@ function initialize()
 		type : 'pattern',
 		patternUrl : "data/hiro.patt",
 	})
-	
+
 	let loader = new THREE.TextureLoader();
-		
+
 	// water
-	
+
 	let geometry1 = new THREE.TorusGeometry(1,1, 64, 256); // radius, tube radius
 	let texture1 = loader.load( 'images/water-2.jpg' );
-	// let texture = loader.load( 'images/color-grid.png' );	
+	// let texture = loader.load( 'images/color-grid.png' );
 	texture1.wrapS = THREE.RepeatWrapping;
 	texture1.wrapT = THREE.RepeatWrapping;
 	texture1.repeat.set(8,2);
-		
+
 	// shader-based material
 	material1 = new THREE.ShaderMaterial({
 		uniforms: {
@@ -178,13 +182,13 @@ function initialize()
 		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
 		transparent: true,
 	});
-	
+
 	mesh1 = new THREE.Mesh( geometry1, material1 );
 	mesh1.rotation.x = -Math.PI/2;
 	mesh1.scale.z = 0.10;
-	
+
 	markerRoot1.add( mesh1 );
-	
+
 	// the inside of the hole
 	let geometry2	= new THREE.CylinderGeometry(1,1, 4, 32,1);
 	let texture2 = loader.load( 'images/tiles.jpg', render );
@@ -195,11 +199,11 @@ function initialize()
 		transparent : true,
 		map: texture2,
 		side: THREE.BackSide
-	}); 
+	});
 	mesh2 = new THREE.Mesh( geometry2, material2 );
 	mesh2.position.y = -2;
 	markerRoot1.add( mesh2 );
-	
+
 	// the invisibility cloak (ring; has circular hole)
 	let geometry0 = new THREE.RingGeometry(1,9, 32);
 	let material0 = new THREE.MeshBasicMaterial({
@@ -208,9 +212,9 @@ function initialize()
 	});
 	let mesh0 = new THREE.Mesh( geometry0, material0 );
 	mesh0.rotation.x = -Math.PI/2;
-	markerRoot1.add(mesh0);	
-	
-	
+	markerRoot1.add(mesh0);
+
+
 }
 
 function update()

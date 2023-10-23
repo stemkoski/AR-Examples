@@ -12,21 +12,26 @@
 	<script src="threex/threex-artoolkitcontext.js"></script>
 	<script src="threex/threex-arbasecontrols.js"></script>
 	<script src="threex/threex-armarkercontrols.js"></script>
+		<script>
+		var vNextURL = "shadow.html";
+		var vMarker = "kanji";
+		// setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",8000);
+	</script>
 </head>
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
 
-<!-- 
+<!--
   Example created by Lee Stemkoski: https://github.com/stemkoski
   Based on the AR.js library and examples created by Jerome Etienne: https://github.com/jeromeetienne/AR.js/
 -->
 
-<!-- ---------------- Custom Shader Code ------------------------ -->
+<!--  Custom Shader Code  -->
 <script id="vertexShader" type="x-shader/x-vertex">
 uniform float refractionRatio;
 varying vec3 vRefract;
-void main() 
-{ 
+void main()
+{
 	vec4 mPosition = modelMatrix * vec4( position, 1.0 );
 	vec3 nWorld = normalize( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
 	vRefract = normalize( refract( normalize( mPosition.xyz - cameraPosition ), nWorld, refractionRatio ) );
@@ -34,19 +39,19 @@ void main()
 }
 </script>
 
-<script id="fragmentShader" type="x-shader/x-vertex"> 
+<script id="fragmentShader" type="x-shader/x-vertex">
 uniform sampler2D texture;
 varying vec3 vRefract;
 uniform float distance;
 uniform float opacity;
 uniform vec3 tint;
-void main() 
+void main()
 {
 	vec2 p = vec2( vRefract.x * distance + 0.5, vRefract.y * distance + 0.5 );
 	p = vec2(1.0, 1.0) - p;
 	vec3 color = texture2D( texture, p ).rgb;
 	gl_FragColor = vec4( color, opacity ) * vec4( tint, 1.0 );
-}  
+}
 </script>
 <!-- ----------------------------------------------------------- -->
 
@@ -69,7 +74,7 @@ function initialize()
 
 	let ambientLight = new THREE.AmbientLight( 0xcccccc, 0.5 );
 	scene.add( ambientLight );
-				
+
 	camera = new THREE.Camera();
 	scene.add(camera);
 
@@ -87,7 +92,7 @@ function initialize()
 	clock = new THREE.Clock();
 	deltaTime = 0;
 	totalTime = 0;
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitSource
 	////////////////////////////////////////////////////////////
@@ -98,33 +103,33 @@ function initialize()
 
 	function onResize()
 	{
-		arToolkitSource.onResize()	
-		arToolkitSource.copySizeTo(renderer.domElement)	
+		arToolkitSource.onResize()
+		arToolkitSource.copySizeTo(renderer.domElement)
 		if ( arToolkitContext.arController !== null )
 		{
-			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)	
-		}	
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)
+		}
 	}
 
 	arToolkitSource.init(function onReady(){
 		onResize()
 	});
-	
+
 	// handle resize event
 	window.addEventListener('resize', function(){
 		onResize()
 	});
-	
+
 	////////////////////////////////////////////////////////////
 	// setup arToolkitContext
-	////////////////////////////////////////////////////////////	
+	////////////////////////////////////////////////////////////
 
 	// create atToolkitContext
 	arToolkitContext = new THREEx.ArToolkitContext({
 		cameraParametersUrl: 'data/camera_para.dat',
 		detectionMode: 'mono'
 	});
-	
+
 	// copy projection matrix to camera when initialization complete
 	arToolkitContext.init( function onCompleted(){
 		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
@@ -144,12 +149,12 @@ function initialize()
 	////////////////////////////////////////////////////////////
 	// setup scene
 	////////////////////////////////////////////////////////////
-	
+
 	let loader = new THREE.TextureLoader();
-	
+
 	let videoTexture = new THREE.VideoTexture( arToolkitSource.domElement );
 	videoTexture.minFilter = THREE.LinearFilter;
-	
+
 	let refractMaterial = new THREE.ShaderMaterial({
 		uniforms: {
 			texture: { value: videoTexture },
@@ -162,14 +167,14 @@ function initialize()
 		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
 		transparent: true
 	});
-	
-	reflectMesh = new THREE.Mesh( 
-		new THREE.TorusKnotGeometry(1, 0.4, 128, 16), // new THREE.SphereBufferGeometry(1, 32, 32), 
-		refractMaterial 
+
+	reflectMesh = new THREE.Mesh(
+		new THREE.TorusKnotGeometry(1, 0.4, 128, 16), // new THREE.SphereBufferGeometry(1, 32, 32),
+		refractMaterial
 	);
-	
+
 	reflectMesh.position.y = 1;
-		
+
 	markerRoot1.add( reflectMesh );
 }
 
@@ -178,7 +183,7 @@ function update()
 	// update artoolkit on every frame
 	if ( arToolkitSource.ready !== false )
 		arToolkitContext.update( arToolkitSource.domElement );
-		
+
 	reflectMesh.rotation.y -= 0.01;
 }
 

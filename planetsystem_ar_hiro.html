@@ -1,0 +1,54 @@
+<!doctype HTML>
+<html>
+  <head>
+    <script src="js/aframe.min.js"></script>
+    <script src="js/aframe-ar.js"> </script>
+    <title>
+      AR.js Planet System for hiro Marker
+      <!-- developed in Bachelor thesis 2021 by Irina Shashkova and tutorial shared on Wikiversity https://de.wikiversity.org/wiki/AR_VR_in_der_Grundschule -->
+    </title>
+    <script>
+		var vNextURL = "video.html";
+		var vMarker = "hiro";
+		// setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",8000);
+	</script>
+  </head>
+  <body style='margin : 0px; overflow: hidden;'>
+    <a-scene>
+      <a-marker id="mymarker" preset="hiro">
+        <!-- Sun -->
+        <a-sphere radius="0.5"  material="color: yellow;opacity:0.8">
+        </a-sphere>
+        <a-entity animation="property:rotation;
+                       to:0 360 0;
+                       dur:100000;
+                       loop:true;
+                       easing:linear">
+            <a-entity position="1 0 0"
+              animation="property:rotation;
+                         to:0 360 0;
+                         dur:10000;
+                         loop:true;
+                         easing:linear">
+                <!-- Earth -->
+                <a-sphere radius="0.125"
+                   material="color: blue;opacity:0.8"
+                  animation="property:rotation;
+                           to:0 360 0;
+                           dur:1000;
+                           loop:true;
+                           easing:linear">
+                </a-sphere>
+                <a-entity position="0.3 0 0">
+                  <!-- Moon -->
+                  <a-sphere  material="color: #C0C0C0;opacity:0.8"
+                            radius="0.0525">
+              </a-sphere>
+            </a-entity>
+        </a-entity>
+      </a-entity>
+    </a-marker>
+      <a-camera position="0 0 0"> </a-camera>
+   </a-scene>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+<!doctype HTML>
+<html>
+  <head>
+    <script src="js/aframe.min.js"></script>
+    <script src="js/aframe-ar.js"> </script>
+    <title>
+      AR.js - Rhein2 - Rodenkirchen for hiro Marker
+    </title>
+    <script>
+		var vNextURL = "rhein3_rodenkirchen.html";
+		var vMarker = "hiro";
+		setTimeout("window.location.href='a_marker.html?nexturl="+vNextURL+"&marker="+vMarker+"'",12000);
+	</script>
+  </head>
+  <body style='margin : 0px; overflow: hidden;'>
+    <a-scene>
+      <a-marker id="mymarker" preset="hiro">
+		<a-sky src="img/rhein2_rodenkirchen.jpg" rotation="-90 0 0"></a-sky>
+		<a-text font="kelsonsans" value="Rhine, Rodenkirchen, Germany" width="6" position="-3.5 2.25 -2.5" rotation="-90 15 0"></a-text>
+	  </a-marker>
+      <a-camera position="0 0 0"> </a-camera>
+   </a-scene>
+  </body>
+</html>
